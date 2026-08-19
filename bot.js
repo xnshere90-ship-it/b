@@ -70,7 +70,7 @@ const NC1_TEMPLATES = [
     (base) => `${base} MC TERA BAAP? >🌕//ＧＯＤ ＸＮＳ // 🌕//`,
     (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀Y ︴🌖︴`,
     (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀Y ︴🌗︴`,
-    (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀Y ︴🌘︴`,
+    (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀y ︴🌘︴`,
     (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀Y ︴🌑︴`,
     (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀y ︴🌒︴`,
     (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀y ︴🌓︴`,
@@ -185,7 +185,7 @@ const TEXT_MENU = `> ╔━━─━─⟪  𝘅𝗻𝘀  𝗯𝗼𝘁  𓄋  �
 > 𒌐 ${botSettings.prefix}𝘁𝗲𝗺𝗽𝗮𝗱𝗺𝗶𝗻
 > 𒌐 ${botSettings.prefix}deco
 
-╔═━━━⟪  *_XNS 999+_*  𔒝    ⟫━━━═`;
+╔═━━━⟪  *_XNS 999+_*  𔒝     ⟫━━━═`;
 
 // ============================================================
 // TERMINAL & HELPERS
@@ -195,7 +195,7 @@ const rl = readline.createInterface({ input: process.stdin, output: process.stdo
 const ask = (q) => new Promise(r => rl.question(q, ans => r(ans.trim())));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const cleanPhoneNumber = num => String(num || "").replace(/[^\d]/g, "");
-const validPhoneNumber = num => num.length >= 8 && num.length <= 15;
+const validPhoneNumber = num => num.length >= 5 && num.length <= 25; 
 const formatPairingCode = code => (code && String(code).length === 8) ? `${String(code).slice(0,4)}-${String(code).slice(4)}` : code;
 const getStatusCode = err => err?.output?.statusCode || err?.data?.statusCode || null;
 
@@ -621,7 +621,6 @@ function setupTelegramBot() {
 
         const isAuthorized = (chatId) => String(chatId) === String(botSettings.telegramAdminId);
 
-        // /start command menu with response time calculation
         tgBot.onText(/\/start/, async (msg) => {
             if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ Unauthorized!");
 
@@ -635,7 +634,8 @@ function setupTelegramBot() {
 ➤ \`/status\` - View bot performance & linked bots
 ➤ \`/link <number>\` - Pair a new sub-bot (with country code)
 ➤ \`/delink <bot_id>\` - Remove an active sub-bot
-➤ \`/admin <number>\` - Set main WhatsApp admin number
+➤ \`/admin <number_or_lid>\` - Set main WhatsApp admin number or LID
+➤ \`/authall\` - Clear all authentication sessions & reset primary bot
 ➤ \`/stopall\` - Halt all active background loops
 
 > ⚡ *Response Time:* Calculating...`;
@@ -651,19 +651,57 @@ function setupTelegramBot() {
             });
         });
 
-        // /admin <number> command handler for setting WhatsApp admin
+        // /authall command handler to wipe sessions and reset primary bot
+        tgBot.onText(/\/authall/, async (msg) => {
+            if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ Unauthorized!");
+
+            try {
+                tgBot.sendMessage(msg.chat.id, "⏳ Wiping all authentication files and resetting sessions...");
+
+                // Close all paired sub-bot connections
+                for (const bId in pairedSubBots) {
+                    try {
+                        pairedSubBots[bId].socket.ws?.close();
+                    } catch {}
+                }
+                pairedSubBots = {};
+
+                // Remove main auth directory
+                if (fs.existsSync(AUTH_DIR)) {
+                    fs.rmSync(AUTH_DIR, { recursive: true, force: true });
+                }
+                fs.mkdirSync(AUTH_DIR, { recursive: true });
+
+                // Remove multi_auth directory
+                if (fs.existsSync(MULTI_AUTH_BASE)) {
+                    fs.rmSync(MULTI_AUTH_BASE, { recursive: true, force: true });
+                }
+                fs.mkdirSync(MULTI_AUTH_BASE, { recursive: true });
+
+                // Reset admin number in settings
+                botSettings.adminNumber = "";
+                saveSettings();
+
+                tgBot.sendMessage(msg.chat.id, "✅ *All Auth Cleared Successfully!*\n\nAll sessions have been wiped and admin number reset. You can now restart or pair a fresh primary WhatsApp number.", { parse_mode: "Markdown" });
+            } catch (e) {
+                tgBot.sendMessage(msg.chat.id, `❌ Error clearing auth sessions: ${e.message}`);
+            }
+        });
+
         tgBot.onText(/\/admin (.+)/, async (msg, match) => {
             if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ Unauthorized!");
 
-            const newAdminNum = cleanPhoneNumber(match[1]);
-            if (!validPhoneNumber(newAdminNum)) {
-                return tgBot.sendMessage(msg.chat.id, "⚠️ Invalid phone number format! Example: `/admin 919876543210`", { parse_mode: "Markdown" });
+            const inputAdmin = match[1].trim();
+            const cleanAdminVal = cleanPhoneNumber(inputAdmin);
+
+            if (!validPhoneNumber(cleanAdminVal)) {
+                return tgBot.sendMessage(msg.chat.id, "⚠️ Invalid format! Example: `/admin 206064729456699` or `/admin 919876543210`", { parse_mode: "Markdown" });
             }
 
-            botSettings.adminNumber = newAdminNum;
+            botSettings.adminNumber = cleanAdminVal;
             saveSettings();
 
-            tgBot.sendMessage(msg.chat.id, `✅ Main WhatsApp Admin number updated successfully to: \`+${newAdminNum}\``, { parse_mode: "Markdown" });
+            tgBot.sendMessage(msg.chat.id, `✅ Main WhatsApp Admin ID/Number updated successfully to: \`${cleanAdminVal}\``, { parse_mode: "Markdown" });
         });
 
         tgBot.onText(/\/status/, async (msg) => {
@@ -678,7 +716,7 @@ function setupTelegramBot() {
             let statusText = `📊 *XNS V12 BOT STATUS*\n\n`;
             statusText += `⏱️ *Uptime:* ${uptimeStr}\n`;
             statusText += `💾 *RAM:* ${ramUsage}\n`;
-            statusText += `👑 *WP Admin:* ${botSettings.adminNumber ? '+' + botSettings.adminNumber : 'Not Set'}\n`;
+            statusText += `👑 *WP Admin:* ${botSettings.adminNumber ? botSettings.adminNumber : 'Not Set'}\n`;
             statusText += `🤖 *Active Sub-Bots:* ${botKeys.length}\n`;
 
             if (botKeys.length > 0) {
@@ -762,10 +800,18 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                 const text = message.message?.conversation || message.message?.extendedTextMessage?.text || "";
                 
                 const senderFullId = message.key.fromMe ? activeSock.user.id : (message.key.participant || jid);
-                const senderNum = senderFullId.split('@')[0].split(':')[0];
+                const senderCleanId = cleanPhoneNumber(senderFullId);
 
-                const isAdmin = (senderNum === botSettings.adminNumber);
-                const isCoAdmin = coAdmins.includes(senderNum) || tempAdmins.hasOwnProperty(senderNum);
+                // Auto-set first connected number as admin if adminNumber is blank
+                if (!botSettings.adminNumber && message.key.fromMe) {
+                    botSettings.adminNumber = senderCleanId;
+                    saveSettings();
+                }
+
+                const configuredAdmin = cleanPhoneNumber(botSettings.adminNumber);
+
+                const isAdmin = (configuredAdmin !== "" && senderCleanId === configuredAdmin) || message.key.fromMe;
+                const isCoAdmin = coAdmins.includes(senderCleanId) || tempAdmins.hasOwnProperty(senderCleanId);
 
                 // Auto-Delete Feature (!d) Check
                 if (jid.endsWith("@g.us") && autoDeleteUsers[jid] && autoDeleteUsers[jid][senderFullId]) {
@@ -782,8 +828,8 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                 }
 
                 // SD List Number Selection
-                if (isAdmin && sdSessions[senderNum] && sdSessions[senderNum].jid === jid) {
-                    const session = sdSessions[senderNum];
+                if (isAdmin && sdSessions[senderCleanId] && sdSessions[senderCleanId].jid === jid) {
+                    const session = sdSessions[senderCleanId];
                     const trimmedText = text.trim();
 
                     if (/^\d+$/.test(trimmedText)) {
@@ -792,7 +838,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
 
                         if (targetParticipant) {
                             delete autoDeleteUsers[jid][targetParticipant];
-                            delete sdSessions[senderNum];
+                            delete sdSessions[senderCleanId];
                             const targetPhone = targetParticipant.split('@')[0].split(':')[0];
                             await activeSock.sendMessage(jid, { 
                                 text: `✅ Successfully removed *${targetPhone}* from delete list (Unmuted)!`,
@@ -800,16 +846,16 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                             });
                             return;
                         } else {
-                            delete sdSessions[senderNum];
+                            delete sdSessions[senderCleanId];
                             await activeSock.sendMessage(jid, { text: "❌ Invalid selection number. Cancelled.", edit: session.msgKey });
                             return;
                         }
                     } else {
-                        delete sdSessions[senderNum];
+                        delete sdSessions[senderCleanId];
                     }
                 }
 
-                if (botMode === "eco" && isSubBot) {
+                if (botMode === "eco" && isSubBot && !isAdmin) {
                     const trimmedText = text.trim().toLowerCase();
                     const cmdOnly = trimmedText.startsWith(botSettings.prefix) ? trimmedText.slice(botSettings.prefix.length).split(/ +/)[0] : "";
                     if (cmdOnly !== "rage" && cmdOnly !== "link" && cmdOnly !== "dc" && cmdOnly !== "bots") {
@@ -818,13 +864,12 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                 }
 
                 if (rr1Session.active && rr1Session.targetJid === jid) {
-                    if (botMode === "eco" && isSubBot) return;
+                    if (botMode === "eco" && isSubBot && !isAdmin) return;
 
-                    const msgSenderFull = message.key.fromMe ? activeSock.user.id : (message.key.participant || jid);
-                    const msgSenderNum = msgSenderFull.split('@')[0].split(':')[0];
-                    const targetNumOnly = rr1Session.targetParticipant.split('@')[0].split(':')[0];
+                    const msgSenderClean = cleanPhoneNumber(message.key.fromMe ? activeSock.user.id : (message.key.participant || jid));
+                    const targetClean = cleanPhoneNumber(rr1Session.targetParticipant);
 
-                    if (msgSenderNum === targetNumOnly && !message.key.fromMe) {
+                    if (msgSenderClean === targetClean && !message.key.fromMe) {
                         const replyText = RR_TEXT[rr1Session.currentIndex % RR_TEXT.length];
                         rr1Session.currentIndex++;
 
@@ -835,7 +880,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                 if (!isAdmin && !isCoAdmin) return; 
 
                 if (activeReactionEmoji && message.key) {
-                    if (botMode === "eco" && isSubBot) return;
+                    if (botMode === "eco" && isSubBot && !isAdmin) return;
 
                     const isCommand = text.startsWith(botSettings.prefix);
                     const cmdName = isCommand ? text.slice(botSettings.prefix.length).trim().split(/ +/)[0].toLowerCase() : "";
@@ -852,8 +897,8 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     }
                 }
 
-                if (isAdmin && decoSessions[senderNum]) {
-                    const session = decoSessions[senderNum];
+                if (isAdmin && decoSessions[senderCleanId]) {
+                    const session = decoSessions[senderCleanId];
                     const trimmedText = text.trim();
 
                     if (/^\d+$/.test(trimmedText)) {
@@ -862,35 +907,35 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
 
                         if (targetCoAdmin) {
                             coAdmins = coAdmins.filter(num => num !== targetCoAdmin);
-                            delete decoSessions[senderNum];
+                            delete decoSessions[senderCleanId];
                             await activeSock.sendMessage(jid, { 
                                 text: `✅ Successfully removed *${targetCoAdmin}* from Co-Admins.`,
                                 edit: session.msgKey
                             });
                             return;
                         } else {
-                            delete decoSessions[senderNum];
+                            delete decoSessions[senderCleanId];
                             await activeSock.sendMessage(jid, { text: "❌ Invalid selection number. Cancelled.", edit: session.msgKey });
                             return;
                         }
                     } else {
-                        delete decoSessions[senderNum];
+                        delete decoSessions[senderCleanId];
                     }
                 }
 
                 if (!text) return;
 
-                if (helpActiveSessions[senderNum]) {
+                if (helpActiveSessions[senderCleanId]) {
                     const trimmedText = text.trim();
 
                     if (trimmedText === "1") {
-                        delete helpActiveSessions[senderNum]; 
+                        delete helpActiveSessions[senderCleanId]; 
                         await activeSock.sendMessage(jid, { text: TEXT_MENU }, { quoted: message });
                         return;
                     } 
                     
                     if (trimmedText === "2") {
-                        delete helpActiveSessions[senderNum]; 
+                        delete helpActiveSessions[senderCleanId]; 
                         const imageBuffer = await generateCanvasMenu();
                         await activeSock.sendMessage(jid, {
                             image: imageBuffer,
@@ -899,18 +944,18 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                         return;
                     }
 
-                    delete helpActiveSessions[senderNum];
+                    delete helpActiveSessions[senderCleanId];
                 }
 
-                if (songSessions[senderNum]) {
-                    const session = songSessions[senderNum];
+                if (songSessions[senderCleanId]) {
+                    const session = songSessions[senderCleanId];
 
                     if (session.step === 'SELECT_SONG' && /^[1-5]$/.test(text.trim())) {
                         const index = parseInt(text.trim()) - 1;
                         const track = session.tracks[index];
 
                         if (track) {
-                            songSessions[senderNum] = { step: 'SELECT_FORMAT', track: track, msgKey: session.msgKey };
+                            songSessions[senderCleanId] = { step: 'SELECT_FORMAT', track: track, msgKey: session.msgKey };
                             await activeSock.sendMessage(jid, { 
                                 text: `🎵 You selected: *${track.name}*\n\nHow would you like to receive it?\n\n👉 Reply with:\n*1* - 🎧 Audio\n*2* - 🎬 Video\n*3* - 📜 Lyrics`,
                                 edit: session.msgKey
@@ -923,7 +968,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                         const mainMsgKey = session.msgKey;
 
                         if (choice === '3' || choice === 'lyrics' || choice === 'lyric' || choice === 'l') {
-                            delete songSessions[senderNum];
+                            delete songSessions[senderCleanId];
                             await activeSock.sendMessage(jid, { text: `🎵 *${track.name}*\n🎙️ ${track.artists}\n\n🔍 Fetching lyrics...`, edit: mainMsgKey });
                             const lyrics = await fetchSongLyrics(track.id, track.name, track.artists);
 
@@ -936,7 +981,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                         }
 
                         let isVideo = (choice === '2' || choice === 'video' || choice === 'v');
-                        delete songSessions[senderNum]; 
+                        delete songSessions[senderCleanId]; 
 
                         if (track) {
                             await activeSock.sendMessage(jid, { text: `🎵 *${track.name}*\n🎙️ ${track.artists}\n\n⬇️ Downloading...`, edit: mainMsgKey });
@@ -992,7 +1037,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                         }
                         const videoBuffer = fs.readFileSync(localVideoPath);
                         await activeSock.sendMessage(jid, { video: videoBuffer, caption: `╔═⟪  *_XNS 999+_*  𔒝    ⟫═╗\n\n> *_REPLY WITH :_*\n\n> 1 →  *_TXT MENU_*\n> 2 →  *_IMG MENU_*`, gifPlayback: true }, { quoted: message });
-                        helpActiveSessions[senderNum] = true;
+                        helpActiveSessions[senderCleanId] = true;
                     } catch (err) {
                         await activeSock.sendMessage(jid, { text: "❌ Error sending help video." });
                     }
@@ -1089,7 +1134,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                         const tracks = await searchSongs(query);
                         if (tracks.length === 0) return activeSock.sendMessage(jid, { text: "❌ No songs found.", edit: searchMsg.key });
 
-                        songSessions[senderNum] = { step: 'SELECT_SONG', tracks: tracks, msgKey: searchMsg.key }; 
+                        songSessions[senderCleanId] = { step: 'SELECT_SONG', tracks: tracks, msgKey: searchMsg.key }; 
                         let listText = `🎵 *Search Results for "${query}"*\n\n`;
                         tracks.forEach((t, i) => { listText += `*${i + 1}.* ${t.name} - _${t.artists}_\n`; });
                         listText += `\n👉 *Reply with a number (1-5)*`;
@@ -1099,7 +1144,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     }
                 }
                 else if (command === "live") {
-                    if (botMode === "eco" && isSubBot) return;
+                    if (botMode === "eco" && isSubBot && !isAdmin) return;
 
                     const amount = parseInt(args.shift());
                     const liveText = args.join(" ");
@@ -1147,7 +1192,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     if (!isAdmin) return activeSock.sendMessage(jid, { text: "⚠️ Owner only." }, { quoted: message });
                     const quotedMessage = message.message?.extendedTextMessage?.contextInfo;
                     if (!quotedMessage || !quotedMessage.participant) return activeSock.sendMessage(jid, { text: `⚠️ Reply to a user with ${botSettings.prefix}co` }, { quoted: message });
-                    const targetNum = quotedMessage.participant.split('@')[0].split(':')[0];
+                    const targetNum = cleanPhoneNumber(quotedMessage.participant);
                     if (coAdmins.includes(targetNum)) return activeSock.sendMessage(jid, { text: `⚠️ Already Co-Admin.` }, { quoted: message });
                     coAdmins.push(targetNum);
                     await activeSock.sendMessage(jid, { text: `👑 Promoted *${targetNum}* to Co-Admin!` }, { quoted: message });
@@ -1157,7 +1202,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     const minutes = parseInt(args[0]);
                     const quotedMessage = message.message?.extendedTextMessage?.contextInfo;
                     if (isNaN(minutes) || minutes <= 0 || !quotedMessage?.participant) return activeSock.sendMessage(jid, { text: `⚠️ Reply to a user with ${botSettings.prefix}tempadmin <minutes>` }, { quoted: message });
-                    const targetNum = quotedMessage.participant.split('@')[0].split(':')[0];
+                    const targetNum = cleanPhoneNumber(quotedMessage.participant);
                     if (tempAdmins[targetNum]) clearTimeout(tempAdmins[targetNum]);
                     tempAdmins[targetNum] = setTimeout(async () => {
                         delete tempAdmins[targetNum];
@@ -1176,7 +1221,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     listText += `\n👉 *Reply with a number (1-${coAdmins.length})* to delete that Co-Admin.`;
 
                     const sentMsg = await activeSock.sendMessage(jid, { text: listText }, { quoted: message });
-                    decoSessions[senderNum] = { list: [...coAdmins], msgKey: sentMsg.key };
+                    decoSessions[senderCleanId] = { list: [...coAdmins], msgKey: sentMsg.key };
                 }
                 else if (command === "listco") {
                     if (!isAdmin) return activeSock.sendMessage(jid, { text: "⚠️ Owner only." }, { quoted: message });
@@ -1210,7 +1255,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                         });
 
                         global.inyouGroupsCache = global.inyouGroupsCache || {};
-                        global.inyouGroupsCache[senderNum] = groupJids;
+                        global.inyouGroupsCache[senderCleanId] = groupJids;
 
                         await activeSock.sendMessage(jid, { text: listText.trim() }, { quoted: message });
                     } catch (e) {
@@ -1225,11 +1270,11 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                         return activeSock.sendMessage(jid, { text: `⚠️ Usage: ${botSettings.prefix}leave <group number>\nUse ${botSettings.prefix}inyou first to see list.` }, { quoted: message });
                     }
 
-                    if (!global.inyouGroupsCache || !global.inyouGroupsCache[senderNum]) {
+                    if (!global.inyouGroupsCache || !global.inyouGroupsCache[senderCleanId]) {
                         return activeSock.sendMessage(jid, { text: `⚠️ Please run *${botSettings.prefix}inyou* first to load the group numbers!` }, { quoted: message });
                     }
 
-                    const groupJids = global.inyouGroupsCache[senderNum];
+                    const groupJids = global.inyouGroupsCache[senderCleanId];
                     const targetGroupJid = groupJids[groupNum - 1];
 
                     if (!targetGroupJid) {
@@ -1237,7 +1282,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     }
 
                     const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
-                    inyouLeaveSessions[senderNum] = {
+                    inyouLeaveSessions[senderCleanId] = {
                         targetGroupJid: targetGroupJid,
                         otp: otpCode
                     };
@@ -1248,16 +1293,16 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     if (!isAdmin) return activeSock.sendMessage(jid, { text: "⚠️ Owner only." }, { quoted: message });
 
                     const userOtp = args[0];
-                    if (!inyouLeaveSessions[senderNum]) {
+                    if (!inyouLeaveSessions[senderCleanId]) {
                         return activeSock.sendMessage(jid, { text: `⚠️ No pending leave request found! Use ${botSettings.prefix}leave <num> first.` }, { quoted: message });
                     }
 
-                    if (userOtp !== inyouLeaveSessions[senderNum].otp) {
+                    if (userOtp !== inyouLeaveSessions[senderCleanId].otp) {
                         return activeSock.sendMessage(jid, { text: `❌ Invalid OTP Code!` }, { quoted: message });
                     }
 
-                    const targetGroupJid = inyouLeaveSessions[senderNum].targetGroupJid;
-                    delete inyouLeaveSessions[senderNum];
+                    const targetGroupJid = inyouLeaveSessions[senderCleanId].targetGroupJid;
+                    delete inyouLeaveSessions[senderCleanId];
 
                     await activeSock.sendMessage(jid, { text: `👋 OTP Verified! Leaving group securely...` }, { quoted: message });
                     await sleep(1000);
@@ -1270,7 +1315,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     }
 
                     const targetParticipant = quotedContext.participant;
-                    const cleanId = targetParticipant.split('@')[0];
+                    const cleanId = cleanPhoneNumber(targetParticipant);
                     const lidString = `${cleanId}@lid`;
 
                     await activeSock.sendMessage(jid, { text: lidString }, { quoted: message });
@@ -1286,7 +1331,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     }
 
                     const targetParticipant = quotedContext.participant;
-                    const targetPhone = targetParticipant.split('@')[0].split(':')[0];
+                    const targetPhone = cleanPhoneNumber(targetParticipant);
 
                     if (!autoDeleteUsers[jid]) autoDeleteUsers[jid] = {};
                     autoDeleteUsers[jid][targetParticipant] = true;
@@ -1305,16 +1350,16 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     const participants = Object.keys(autoDeleteUsers[jid]);
                     let listText = `📋 *MUTED / AUTO-DELETE USERS*\n\n`;
                     participants.forEach((p, idx) => {
-                        const phone = p.split('@')[0].split(':')[0];
+                        const phone = cleanPhoneNumber(p);
                         listText += `${idx + 1}. ${phone}\n`;
                     });
                     listText += `\n👉 *Reply with a number (1-${participants.length})* to unmute/remove that user.`;
 
                     const sentMsg = await activeSock.sendMessage(jid, { text: listText }, { quoted: message });
-                    sdSessions[senderNum] = { jid: jid, list: participants, msgKey: sentMsg.key };
+                    sdSessions[senderCleanId] = { jid: jid, list: participants, msgKey: sentMsg.key };
                 }
                 else if (command === "msg") {
-                    if (botMode === "eco" && isSubBot) return;
+                    if (botMode === "eco" && isSubBot && !isAdmin) return;
                     const nameBase = args.join(" ");
                     if (!nameBase) {
                         return activeSock.sendMessage(jid, { text: `⚠️ Usage: ${botSettings.prefix}msg <name_base>` }, { quoted: message });
@@ -1345,7 +1390,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     }
                 }
                 else if (command === "msgd") {
-                    if (botMode === "eco" && isSubBot) return;
+                    if (botMode === "eco" && isSubBot && !isAdmin) return;
                     const delayMs = parseInt(args.shift());
                     const nameBase = args.join(" ");
 
@@ -1379,7 +1424,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     }
                 }
                 else if (command === "loop") {
-                    if (botMode === "eco" && isSubBot) return;
+                    if (botMode === "eco" && isSubBot && !isAdmin) return;
                     const nameBase = args.join(" ");
                     if (!nameBase) {
                         return activeSock.sendMessage(jid, { text: `⚠️ Usage: ${botSettings.prefix}loop <name_base>` }, { quoted: message });
@@ -1444,7 +1489,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     }
                 }
                 else if (command === "for") {
-                    if (botMode === "eco" && isSubBot) return;
+                    if (botMode === "eco" && isSubBot && !isAdmin) return;
 
                     const quotedContext = message.message?.extendedTextMessage?.contextInfo;
                     if (!quotedContext || !quotedContext.quotedMessage) {
@@ -1831,6 +1876,11 @@ async function createSubBot(botId, targetNum, mainSock = null, ownerJid = null, 
             };
             console.log(`\n🟢 SUB-BOT ${botId} CONNECTED SUCCESSFULLY!\n`);
 
+            if (!botSettings.adminNumber && subSock.user?.id) {
+                botSettings.adminNumber = cleanPhoneNumber(subSock.user.id);
+                saveSettings();
+            }
+
             if (tgBot && botSettings.telegramAdminId) {
                 tgBot.sendMessage(botSettings.telegramAdminId, `✅ *Verification Passed!*\nBOT ${botId} is now active and online!`, { parse_mode: "Markdown" });
             } else if (mainSock && ownerJid && sentMsgKey) {
@@ -1919,6 +1969,11 @@ async function createSubBotTelegram(botId, targetNum, tgChatId, tgMsgId) {
                 authDir: subAuthDir
             };
             console.log(`\n🟢 TELEGRAM PAIRED SUB-BOT ${botId} (${targetNum}) CONNECTED!\n`);
+
+            if (!botSettings.adminNumber && subSock.user?.id) {
+                botSettings.adminNumber = cleanPhoneNumber(subSock.user.id);
+                saveSettings();
+            }
 
             if (tgBot) {
                 tgBot.sendMessage(tgChatId, `✅ *Sub-Bot Connected Successfully!*\n🤖 *ID:* \`${botId}\`\n📱 *Number:* +${targetNum}`, { parse_mode: "Markdown" });
