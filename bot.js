@@ -60,9 +60,9 @@ const NC_SYMBOLS = ["💘", "💕", "💟", "❣️", "💔", "❤️‍🔥", "
 
 const NC1_TEMPLATES = [
     (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀y ︴🌾︴`,
-    (base) => `${base} ? ⫸ 𝙇O𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀𝙔 ︴🌵︴`,
+    (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀Y ︴🌵︴`,
     (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀y ︴🌴︴`,
-    (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀Y ︴🌳︴`,
+    (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀y ︴🌳︴`,
     (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀y ︴🌲︴`,
     (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀y ︴🌎︴`,
     (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀y ︴🌍︴`,
@@ -89,10 +89,6 @@ const DNC_TEMPLATES = [
     (base) => `❣️${base}❣️`,
     (base) => `💟${base}💟`
 ];
-
-// ============================================================
-// FULL BLOCK SPAM MESSAGES CONFIGURATION
-// ============================================================
 
 const MSG_1 = `
 <name> HY KENG ITS MY GROUP
@@ -147,47 +143,47 @@ const TEXT_MENU = `> ╔━━─━─⟪  𝘅𝗻𝘀  𝗯𝗼𝘁  𓄋  �
 
 > ⟦ ⚙️ 𝗦𝗬𝗦𝗧𝗘𝗠 𝗖𝗢𝗡𝗧𝗥𝗢𝗟 ⟧
 
-> 𒌐    ${botSettings.prefix}𝗺𝗲𝗻𝘂
-> 𒌐    ${botSettings.prefix}𝘀𝘁𝗮𝘁𝘀
-> 𒌐    ${botSettings.prefix}𝘃𝗻 <𝘁𝘁𝘀> (Voice Note)
-> 𒌐    ${botSettings.prefix}𝗵𝗲𝗹𝗽
-> 𒌐    ${botSettings.prefix}𝗽𝗶𝗻𝗴
-> 𒌐    ${botSettings.prefix}𝗲𝗰𝗼
-> 𒌐    ${botSettings.prefix}𝗿𝗮𝗴𝗲
-> 𒌐    ${botSettings.prefix}𝗽𝗿𝗲𝗳𝗶𝘅 <𝗻𝗲𝘄>
-> 𒌐    ${botSettings.prefix}𝗺𝘀𝗴 <𝗻𝗮𝗺𝗲>
-> 𒌐    ${botSettings.prefix}𝗺𝘀𝗴𝗱 <𝗺𝘀> <𝗻𝗮𝗺𝗲>
-> 𒌐    ${botSettings.prefix}𝗹𝗼𝗼𝗽 <𝗻𝗮𝗺𝗲>
-> 𒌐    ${botSettings.prefix}𝘀𝗹𝗼𝗼𝗽
-> 𒌐    ${botSettings.prefix}𝗳𝗼𝗿 (𝗥𝗲𝗽𝗹𝘆 𝘁𝗼 𝗺𝘀𝗴)
-> <div>  ${botSettings.prefix}sfor
-> 𒌐    ${botSettings.prefix}𝗱 (𝗥𝗲𝗽𝗹𝘆 𝘁𝗼 𝘂𝘀𝗲𝗿)
-> 𒌐    ${botSettings.prefix}𝘀𝗱 (𝗩𝗶𝗲𝘄 𝗺𝘂𝘁𝗲𝗱 𝗹𝗶𝘀𝘁)
-> 𒌐    ${botSettings.prefix}𝗶𝗻𝘆𝗼𝘂 (𝗟𝗶𝘀𝘁 𝗴𝗿𝗼𝘂𝗽𝘀)
-> 𒌐    ${botSettings.prefix}𝗹𝗲𝗮𝘃𝗲 <𝗴𝗿𝗼𝘂𝗽 𝗻𝘂𝗺𝗯𝗲𝗿>
-> 𒌐    ${botSettings.prefix}𝗼𝘁𝗽 <𝗰𝗼𝗱𝗲>
-> 𒌐    ${botSettings.prefix}𝗹𝗶𝗱 (𝗥𝗲𝗽𝗹𝘆 𝘁𝗼 𝘂𝘀𝗲𝗿)
-> 𒌐    ${botSettings.prefix}𝗹𝗶𝘀𝘁𝗰𝗼 (𝗦𝗵𝗼𝘄 𝗰𝗼𝗮𝗱𝗺𝗶𝗻𝘀)
-> 𒌐    ${botSettings.prefix}𝗹𝗶𝘃𝗲 <𝗮𝗺𝘁> <𝘁𝘅𝘁>
-> 𒌐    ${botSettings.prefix}𝘂𝗻𝗹𝗶𝘃𝗲
-> 𒌐    ${botSettings.prefix}𝘀 <𝘀𝗼𝗻𝗴>
-> 𒌐    ${botSettings.prefix}𝗿𝗲𝗮𝗰𝘁 <𝗲𝗺𝗼𝗷𝗶>
-> 𒌐    ${botSettings.prefix}𝗿𝗼𝗳
-> 𒌐    ${botSettings.prefix}𝗿𝗿
-> <div>  ${botSettings.prefix}stoprr
-> <div>  ${botSettings.prefix}rr1
-> <div>  ${botSettings.prefix}stoprr1
-> 𒌐    ${botSettings.prefix}𝗻𝗰 <𝗯𝗮𝘀𝗲 𝘁𝗲𝘅𝘁>
-> 𒌐    ${botSettings.prefix}𝘀𝗻𝗰
-> 𒌐    ${botSettings.prefix}𝗱𝗻𝗰 <𝗯𝗮𝘀𝗲 𝘁𝗲𝘅𝘁>
-> 𒌐    ${botSettings.prefix}𝘀𝗱𝗻𝗰
-> 𒌐    ${botSettings.prefix}𝗹𝗶𝗻𝗸 <𝗻𝘂𝗺𝗯𝗲𝗿>
-> 𒌐    ${botSettings.prefix}bots
-> 𒌐    ${botSettings.prefix}dc <𝟱-𝗱𝗶𝗴𝗶𝘁 𝗶𝗱>
-> 𒌐    ${botSettings.prefix}𝘀𝘁𝗼𝗽𝗮𝗹𝗹
-> 𒌐    ${botSettings.prefix}𝗰𝗼
-> 𒌐    ${botSettings.prefix}𝘁𝗲𝗺𝗽𝗮𝗱𝗺𝗶𝗻
-> <div>  ${botSettings.prefix}deco
+> 𒌐 ${botSettings.prefix}𝗺𝗲𝗻𝘂
+> 𒌐 ${botSettings.prefix}𝘀𝘁𝗮𝘁𝘀
+> 𒌐 ${botSettings.prefix}𝘃𝗻 <𝘁𝘁𝘀> (Voice Note)
+> 𒌐 ${botSettings.prefix}𝗵𝗲𝗹𝗽
+> 𒌐 ${botSettings.prefix}𝗽𝗶𝗻𝗴
+> 𒌐 ${botSettings.prefix}𝗲𝗰𝗼
+> 𒌐 ${botSettings.prefix}𝗿𝗮𝗴𝗲
+> 𒌐 ${botSettings.prefix}𝗽𝗿𝗲𝗳𝗶𝘅 <𝗻𝗲𝘄>
+> 𒌐 ${botSettings.prefix}𝗺𝘀𝗴 <𝗻𝗮𝗺𝗲>
+> 𒌐 ${botSettings.prefix}𝗺𝘀𝗴𝗱 <𝗺𝘀> <𝗻𝗮𝗺𝗲>
+> 𒌐 ${botSettings.prefix}𝗹𝗼𝗼𝗽 <𝗻𝗮𝗺𝗲>
+> 𒌐 ${botSettings.prefix}𝘀𝗹𝗼𝗼𝗽
+> 𒌐 ${botSettings.prefix}𝗳𝗼𝗿 (𝗥𝗲𝗽𝗹𝘆 𝘁𝗼 𝗺𝘀𝗴)
+> 𒌐 ${botSettings.prefix}sfor
+> 𒌐 ${botSettings.prefix}𝗱 (𝗥𝗲𝗽𝗹𝘆 𝘁𝗼 𝘂𝘀𝗲𝗿)
+> 𒌐 ${botSettings.prefix}𝘀𝗱 (𝗩𝗶𝗲𝘄 𝗺𝘂𝘁𝗲𝗱 𝗹𝗶𝘀𝘁)
+> 𒌐 ${botSettings.prefix}𝗶𝗻𝘆𝗼𝘂 (𝗟𝗶𝘀𝘁 𝗴𝗿𝗼𝘂𝗽𝘀)
+> 𒌐 ${botSettings.prefix}𝗹𝗲𝗮𝘃𝗲 <𝗴𝗿𝗼𝘂𝗽 𝗻𝘂𝗺𝗯𝗲𝗿>
+> 𒌐 ${botSettings.prefix}𝗼𝘁𝗽 <𝗰𝗼𝗱𝗲>
+> 𒌐 ${botSettings.prefix}𝗹𝗶𝗱 (𝗥𝗲𝗽𝗹𝘆 𝘁𝗼 𝘂𝘀𝗲𝗿)
+> 𒌐 ${botSettings.prefix}𝗹𝗶𝘀𝘁𝗰𝗼 (𝗦𝗵𝗼𝘄 𝗰𝗼𝗮𝗱𝗺𝗶𝗻𝘀)
+> 𒌐 ${botSettings.prefix}𝗹𝗶𝘃𝗲 <𝗮𝗺𝘁> <𝘁𝘅𝘁>
+> 𒌐 ${botSettings.prefix}𝘂𝗻𝗹𝗶𝘃𝗲
+> 𒌐 ${botSettings.prefix}𝘀 <𝘀𝗼𝗻𝗴>
+> 𒌐 ${botSettings.prefix}𝗿𝗲𝗮𝗰𝘁 <𝗲𝗺𝗼𝗷𝗶>
+> 𒌐 ${botSettings.prefix}𝗿𝗼𝗳
+> 𒌐 ${botSettings.prefix}𝗿𝗿
+> 𒌐 ${botSettings.prefix}stoprr
+> 𒌐 ${botSettings.prefix}rr1
+> 𒌐 ${botSettings.prefix}stoprr1
+> 𒌐 ${botSettings.prefix}𝗻𝗰 <𝗯𝗮𝘀𝗲 𝘁𝗲𝘅𝘁>
+> 𒌐 ${botSettings.prefix}𝘀𝗻𝗰
+> 𒌐 ${botSettings.prefix}𝗱𝗻𝗰 <𝗯𝗮𝘀𝗲 𝘁𝗲𝘅𝘁>
+> 𒌐 ${botSettings.prefix}𝘀𝗱𝗻𝗰
+> 𒌐 ${botSettings.prefix}𝗹𝗶𝗻𝗸 <𝗻𝘂𝗺𝗯𝗲𝗿>
+> 𒌐 ${botSettings.prefix}bots
+> 𒌐 ${botSettings.prefix}dc <𝟱-𝗱𝗶𝗴𝗶𝘁 𝗶𝗱>
+> 𒌐 ${botSettings.prefix}𝘀𝘁𝗼𝗽𝗮𝗹𝗹
+> 𒌐 ${botSettings.prefix}𝗰𝗼
+> 𒌐 ${botSettings.prefix}𝘁𝗲𝗺𝗽𝗮𝗱𝗺𝗶𝗻
+> 𒌐 ${botSettings.prefix}deco
 
 ╔═━━━⟪  *_XNS 999+_*  𔒝    ⟫━━━═`;
 
@@ -625,9 +621,55 @@ function setupTelegramBot() {
 
         const isAuthorized = (chatId) => String(chatId) === String(botSettings.telegramAdminId);
 
+        // /start command menu with response time calculation
+        tgBot.onText(/\/start/, async (msg) => {
+            if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ Unauthorized!");
+
+            const startPing = Date.now();
+            const menuText = `╔━━─━─⟪  𝘅𝗻𝘀  𝗯𝗼𝘁  𓄋  𝘃𝟭𝟮 —͟͞͞☠︎︎ ⟫━─═╗
+┃      *_TELEGRAM MANAGEMENT PANEL_*
+╚═━━━━─━─━─━─━━━─━─━─━─━═╝
+
+> 🤖 *Available Commands:*
+
+➤ \`/status\` - View bot performance & linked bots
+➤ \`/link <number>\` - Pair a new sub-bot (with country code)
+➤ \`/delink <bot_id>\` - Remove an active sub-bot
+➤ \`/admin <number>\` - Set main WhatsApp admin number
+➤ \`/stopall\` - Halt all active background loops
+
+> ⚡ *Response Time:* Calculating...`;
+
+            const sentMsg = await tgBot.sendMessage(msg.chat.id, menuText, { parse_mode: "Markdown" });
+            const latency = Date.now() - startPing;
+
+            const updatedMenuText = menuText.replace("Calculating...", `${latency}ms`);
+            await tgBot.editMessageText(updatedMenuText, {
+                chat_id: msg.chat.id,
+                message_id: sentMsg.message_id,
+                parse_mode: "Markdown"
+            });
+        });
+
+        // /admin <number> command handler for setting WhatsApp admin
+        tgBot.onText(/\/admin (.+)/, async (msg, match) => {
+            if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ Unauthorized!");
+
+            const newAdminNum = cleanPhoneNumber(match[1]);
+            if (!validPhoneNumber(newAdminNum)) {
+                return tgBot.sendMessage(msg.chat.id, "⚠️ Invalid phone number format! Example: `/admin 919876543210`", { parse_mode: "Markdown" });
+            }
+
+            botSettings.adminNumber = newAdminNum;
+            saveSettings();
+
+            tgBot.sendMessage(msg.chat.id, `✅ Main WhatsApp Admin number updated successfully to: \`+${newAdminNum}\``, { parse_mode: "Markdown" });
+        });
+
         tgBot.onText(/\/status/, async (msg) => {
             if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ Unauthorized!");
 
+            const startPing = Date.now();
             const uptimeStr = formatUptime(process.uptime());
             const mem = process.memoryUsage();
             const ramUsage = `${(mem.heapUsed / 1024 / 1024).toFixed(2)} MB`;
@@ -636,6 +678,7 @@ function setupTelegramBot() {
             let statusText = `📊 *XNS V12 BOT STATUS*\n\n`;
             statusText += `⏱️ *Uptime:* ${uptimeStr}\n`;
             statusText += `💾 *RAM:* ${ramUsage}\n`;
+            statusText += `👑 *WP Admin:* ${botSettings.adminNumber ? '+' + botSettings.adminNumber : 'Not Set'}\n`;
             statusText += `🤖 *Active Sub-Bots:* ${botKeys.length}\n`;
 
             if (botKeys.length > 0) {
@@ -644,6 +687,9 @@ function setupTelegramBot() {
                     statusText += `${idx + 1}. ID: \`${id}\` | Num: +${pairedSubBots[id].phoneNumber}\n`;
                 });
             }
+
+            const latency = Date.now() - startPing;
+            statusText += `\n⚡ *Response Time:* ${latency}ms`;
 
             tgBot.sendMessage(msg.chat.id, statusText, { parse_mode: "Markdown" });
         });
