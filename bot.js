@@ -24,7 +24,7 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 // CONFIG & SETTINGS
 // ============================================================
 
-const AUTH_DIR = path.join(__dirname, "auth");
+const AUTH_MAIN_DIR = path.join(__dirname, "auth_main");
 const MULTI_AUTH_BASE = path.join(__dirname, "multi_auth");
 const SETTINGS_FILE = path.join(__dirname, "settings.json");
 const CUSTOM_PAIRING_CODE = "WPV12XNS";
@@ -39,6 +39,7 @@ let botSettings = {
 
 let botMode = "eco"; // Default mode is 'eco'
 let tgBot = null;
+let mainSocket = null;
 
 const RR_TEXT = [
     ' 🔥 Oye सुन! Tere maa के चुत मै आग laag गयी 😅🙏 मैं mutke 🌊 बुझा दू 😅🤭',
@@ -71,7 +72,7 @@ const NC1_TEMPLATES = [
     (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀Y ︴🌖︴`,
     (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀Y ︴🌗︴`,
     (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀y ︴🌘︴`,
-    (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀Y ︴🌑︴`,
+    (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀y ︴🌑︴`,
     (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀y ︴🌒︴`,
     (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀y ︴🌓︴`,
     (base) => `${base} ? ⫸ 𝙇𝙊𝙒 𝙇𝙀𝙑𝙀𝙇 𝙆𝙐𝙏𝙏𝙀y ︴🌔︴`,
@@ -91,43 +92,42 @@ const DNC_TEMPLATES = [
 ];
 
 const MSG_1 = `
-<name> HY KENG ITS MY GROUP
-<name> HY KENG ITS MY GROUP
-<name> HY KENG ITS MY GROUP
-<name> HY KENG ITS MY GROUP
-<name> HY KENG ITS MY GROUP
-<name> HY KENG ITS MY GROUP
-<name> HY KENG ITS MY GROUP
-<name> HY KENG ITS MY GROUP
-<name> HY KENG ITS MY GROUP
-<name> HY KENG ITS MY GROUP
-<name> HY KENG ITS MY GROUP
-<name> HY KENG ITS MY GROUP
-<name> HY KENG ITS MY GROUP
+<name> *_BRO TERYY MAA RNDY HO JAYE TOH TU ROYEGA?? ❤️‍🩹_*
+<name> *_BRO TERYY MAA RNDY HO JAYE TOH TU ROYEGA?? ❤️‍🔥_*
+<name> *_BRO TERYY MAA RNDY HO JAYE TOH TU ROYEGA?? ❤️_*
+<name> *_BRO TERYY MAA RNDY HO JAYE TOH TU ROYEGA?? ❣️_*
+<name> *_BRO TERYY MAA RNDY HO JAYE TOH TU ROYEGA?? 💟_*
+<name> *_BRO TERYY MAA RNDY HO JAYE TOH TU ROYEGA?? 💔_*
+<name> *_BRO TERYY MAA RNDY HO JAYE TOH TU ROYEGA?? 🩷_*
+<name> *_BRO TERYY MAA RNDY HO JAYE TOH TU ROYEGA?? 🧡_*
+<name> *_BRO TERYY MAA RNDY HO JAYE TOH TU ROYEGA?? 💛_*
+<name> *_BRO TERYY MAA RNDY HO JAYE TOH TU ROYEGA?? 💙_*
 `.trim();
 
 const MSG_2 = `
-<name> HY MY NAME IS XNS 
-<name> HY MY NAME IS XNS 
-<name> HY MY NAME IS XNS 
-<name> HY MY NAME IS XNS 
-<name> HY MY NAME IS XNS 
-<name> HY MY NAME IS XNS 
-<name> HY MY NAME IS XNS 
-<name> HY MY NAME IS XNS 
-<name> HY MY NAME IS XNS 
-<name> HY MY NAME IS XNS 
+<name> BRO TERI BEHEN KI IZZAT LUT GAYI TOH TU ROYEGA?? ❤️‍🩹
+<name> BRO TERI BEHEN KI IZZAT LUT GAYI TOH TU ROYEGA?? ❤️‍🔥
+<name> BRO TERI BEHEN KI IZZAT LUT GAYI TOH TU ROYEGA?? ❤️
+<name> BRO TERI BEHEN KI IZZAT LUT GAYI TOH TU ROYEGA?? ❣️
+<name> BRO TERI BEHEN KI IZZAT LUT GAYI TOH TU ROYEGA?? 💟
+<name> BRO TERI BEHEN KI IZZAT LUT GAYI TOH TU ROYEGA?? 💔
+<name> BRO TERI BEHEN KI IZZAT LUT GAYI TOH TU ROYEGA?? 🩷
+<name> BRO TERI BEHEN KI IZZAT LUT GAYI TOH TU ROYEGA?? 🧡
+<name> BRO TERI BEHEN KI IZZAT LUT GAYI TOH TU ROYEGA?? 💛
+<name> BRO TERI BEHEN KI IZZAT LUT GAYI TOH TU ROYEGA?? 💙
 `.trim();
 
 const MSG_3 = `
-<name> HY IM GOOD BOY
-<name> HY IM GOOD BOY
-<name> HY IM GOOD BOY
-<name> HY IM GOOD BOY
-<name> HY IM GOOD BOY
-<name> HY IM GOOD BOY
-<name> HY IM GOOD BOY
-<name> HY IM GOOD BOY
+<name> BRO TERI MAA RNDI HO JAYE TOH TU ROYEGA YA HASEGA?? ❤️‍🩹
+<name> BRO TERI MAA RNDI HO JAYE TOH TU ROYEGA YA HASEGA?? ❤️‍🔥
+<name> BRO TERI MAA RNDI HO JAYE TOH TU ROYEGA YA HASEGA?? ❤️
+<name> BRO TERI MAA RNDI HO JAYE TOH TU ROYEGA YA HASEGA?? ❣️
+<name> BRO TERI MAA RNDI HO JAYE TOH TU ROYEGA YA HASEGA?? 💟
+<name> BRO TERI MAA RNDI HO JAYE TOH TU ROYEGA YA HASEGA?? 💔
+<name> BRO TERI MAA RNDI HO JAYE TOH TU ROYEGA YA HASEGA?? 🩷
+<name> BRO TERI MAA RNDI HO JAYE TOH TU ROYEGA YA HASEGA?? 🧡
+<name> BRO TERI MAA RNDI HO JAYE TOH TU ROYEGA YA HASEGA?? 💛
+<name> BRO TERI MAA RNDI HO JAYE TOH TU ROYEGA YA HASEGA?? 💙
 `.trim();
 
 const TEXT_MENU = `> ╔━━─━─⟪  𝘅𝗻𝘀  𝗯𝗼𝘁  𓄋  𝘃𝟭𝟮 —͟͞͞☠︎︎ ⟫━─═╗
@@ -138,7 +138,7 @@ const TEXT_MENU = `> ╔━━─━─⟪  𝘅𝗻𝘀  𝗯𝗼𝘁  𓄋  �
 
 ➤ 𝗕𝗼𝘁 𝗜𝗗     » 𝗫𝗡𝗦 𝗩𝟭𝟮
 ➤ 𝗣𝗿𝗲𝗳𝗶𝘅     » ${botSettings.prefix}
-➤ 𝗠𝗼𝗱𝗲       » 𝗣𝗥𝗢
+➤ 𝗠𝗼𝗱𝗲       » ${botMode.toUpperCase()}
 ➤ 𝗦𝘁𝗮𝘁𝘂𝘀     » 𝗢𝗡𝗟𝗜𝗡𝗘
 
 > ⟦ ⚙️ 𝗦𝗬𝗦𝗧𝗘𝗠 𝗖𝗢𝗡𝗧𝗥𝗢𝗟 ⟧
@@ -622,7 +622,7 @@ function setupTelegramBot() {
         const isAuthorized = (chatId) => String(chatId) === String(botSettings.telegramAdminId);
 
         tgBot.onText(/\/start/, async (msg) => {
-            if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ Unauthorized!");
+            if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ *_UNAUTHORIZED_*");
 
             const startPing = Date.now();
             const menuText = `╔━━─━─⟪  𝘅𝗻𝘀  𝗯𝗼𝘁  𓄋  𝘃𝟭𝟮 —͟͞͞☠︎︎ ⟫━─═╗
@@ -651,14 +651,16 @@ function setupTelegramBot() {
             });
         });
 
-        // /authall command handler to wipe sessions and reset primary bot
         tgBot.onText(/\/authall/, async (msg) => {
-            if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ Unauthorized!");
+            if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ *_UNAUTHORIZED_*");
 
             try {
-                tgBot.sendMessage(msg.chat.id, "⏳ Wiping all authentication files and resetting sessions...");
+                tgBot.sendMessage(msg.chat.id, "*_WIPING SESSIONS_*");
 
-                // Close all paired sub-bot connections
+                if (mainSocket) {
+                    try { mainSocket.ws?.close(); } catch {}
+                }
+
                 for (const bId in pairedSubBots) {
                     try {
                         pairedSubBots[bId].socket.ws?.close();
@@ -666,46 +668,43 @@ function setupTelegramBot() {
                 }
                 pairedSubBots = {};
 
-                // Remove main auth directory
-                if (fs.existsSync(AUTH_DIR)) {
-                    fs.rmSync(AUTH_DIR, { recursive: true, force: true });
+                if (fs.existsSync(AUTH_MAIN_DIR)) {
+                    fs.rmSync(AUTH_MAIN_DIR, { recursive: true, force: true });
                 }
-                fs.mkdirSync(AUTH_DIR, { recursive: true });
+                fs.mkdirSync(AUTH_MAIN_DIR, { recursive: true });
 
-                // Remove multi_auth directory
                 if (fs.existsSync(MULTI_AUTH_BASE)) {
                     fs.rmSync(MULTI_AUTH_BASE, { recursive: true, force: true });
                 }
                 fs.mkdirSync(MULTI_AUTH_BASE, { recursive: true });
 
-                // Reset admin number in settings
                 botSettings.adminNumber = "";
                 saveSettings();
 
-                tgBot.sendMessage(msg.chat.id, "✅ *All Auth Cleared Successfully!*\n\nAll sessions have been wiped and admin number reset. You can now restart or pair a fresh primary WhatsApp number.", { parse_mode: "Markdown" });
+                tgBot.sendMessage(msg.chat.id, "*_AUTH CLEARED_*", { parse_mode: "Markdown" });
             } catch (e) {
-                tgBot.sendMessage(msg.chat.id, `❌ Error clearing auth sessions: ${e.message}`);
+                tgBot.sendMessage(msg.chat.id, "*_ERROR_*");
             }
         });
 
         tgBot.onText(/\/admin (.+)/, async (msg, match) => {
-            if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ Unauthorized!");
+            if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ *_UNAUTHORIZED_*");
 
             const inputAdmin = match[1].trim();
             const cleanAdminVal = cleanPhoneNumber(inputAdmin);
 
             if (!validPhoneNumber(cleanAdminVal)) {
-                return tgBot.sendMessage(msg.chat.id, "⚠️ Invalid format! Example: `/admin 206064729456699` or `/admin 919876543210`", { parse_mode: "Markdown" });
+                return tgBot.sendMessage(msg.chat.id, "*_INVALID FORMAT_*", { parse_mode: "Markdown" });
             }
 
             botSettings.adminNumber = cleanAdminVal;
             saveSettings();
 
-            tgBot.sendMessage(msg.chat.id, `✅ Main WhatsApp Admin ID/Number updated successfully to: \`${cleanAdminVal}\``, { parse_mode: "Markdown" });
+            tgBot.sendMessage(msg.chat.id, "*_ADMIN UPDATED_*", { parse_mode: "Markdown" });
         });
 
         tgBot.onText(/\/status/, async (msg) => {
-            if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ Unauthorized!");
+            if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ *_UNAUTHORIZED_*");
 
             const startPing = Date.now();
             const uptimeStr = formatUptime(process.uptime());
@@ -733,40 +732,40 @@ function setupTelegramBot() {
         });
 
         tgBot.onText(/\/link (.+)/, async (msg, match) => {
-            if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ Unauthorized!");
+            if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ *_UNAUTHORIZED_*");
 
             const targetNum = cleanPhoneNumber(match[1]);
             if (!validPhoneNumber(targetNum)) {
-                return tgBot.sendMessage(msg.chat.id, "⚠️ Invalid phone number format! Use: `/link 919876543210`", { parse_mode: "Markdown" });
+                return tgBot.sendMessage(msg.chat.id, "*_INVALID NUMBER_*", { parse_mode: "Markdown" });
             }
 
             const chatId = msg.chat.id;
-            const sentMsg = await tgBot.sendMessage(chatId, `⏳ Initializing sub-bot for *+${targetNum}*...`, { parse_mode: "Markdown" });
+            const sentMsg = await tgBot.sendMessage(chatId, "*_CONNECTING_*", { parse_mode: "Markdown" });
             const botId = generateFiveDigitId();
 
             await createSubBotTelegram(botId, targetNum, chatId, sentMsg.message_id);
         });
 
         tgBot.onText(/\/delink (.+)/, async (msg, match) => {
-            if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ Unauthorized!");
+            if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ *_UNAUTHORIZED_*");
 
             const botId = match[1].trim();
             if (!pairedSubBots[botId]) {
-                return tgBot.sendMessage(msg.chat.id, `❌ Bot ID *${botId}* not found! Use \`/status\` to check IDs.`, { parse_mode: "Markdown" });
+                return tgBot.sendMessage(msg.chat.id, "*_BOT NOT FOUND_*", { parse_mode: "Markdown" });
             }
 
             try {
                 pairedSubBots[botId].socket.ws?.close();
                 fs.rmSync(pairedSubBots[botId].authDir, { recursive: true, force: true });
                 delete pairedSubBots[botId];
-                tgBot.sendMessage(msg.chat.id, `✅ Successfully disconnected & removed Bot ID: *${botId}*`, { parse_mode: "Markdown" });
+                tgBot.sendMessage(msg.chat.id, "*_DELINKED_*", { parse_mode: "Markdown" });
             } catch (e) {
-                tgBot.sendMessage(msg.chat.id, `❌ Error: ${e.message}`);
+                tgBot.sendMessage(msg.chat.id, "*_ERROR_*");
             }
         });
 
         tgBot.onText(/\/stopall/, async (msg) => {
-            if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ Unauthorized!");
+            if (!isAuthorized(msg.chat.id)) return tgBot.sendMessage(msg.chat.id, "⛔ *_UNAUTHORIZED_*");
 
             isLiveRunning = false;
             isRrRunning = false;
@@ -777,7 +776,7 @@ function setupTelegramBot() {
             forwardLoopSessions = {};
             autoDeleteUsers = {};
 
-            tgBot.sendMessage(msg.chat.id, "🛑 All background loops and spam tasks stopped successfully!");
+            tgBot.sendMessage(msg.chat.id, "*_STOPPED_*");
         });
 
     } catch (e) {
@@ -802,7 +801,6 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                 const senderFullId = message.key.fromMe ? activeSock.user.id : (message.key.participant || jid);
                 const senderCleanId = cleanPhoneNumber(senderFullId);
 
-                // Auto-set first connected number as admin if adminNumber is blank
                 if (!botSettings.adminNumber && message.key.fromMe) {
                     botSettings.adminNumber = senderCleanId;
                     saveSettings();
@@ -839,15 +837,14 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                         if (targetParticipant) {
                             delete autoDeleteUsers[jid][targetParticipant];
                             delete sdSessions[senderCleanId];
-                            const targetPhone = targetParticipant.split('@')[0].split(':')[0];
                             await activeSock.sendMessage(jid, { 
-                                text: `✅ Successfully removed *${targetPhone}* from delete list (Unmuted)!`,
+                                text: "*_UNMUTED_*",
                                 edit: session.msgKey
                             });
                             return;
                         } else {
                             delete sdSessions[senderCleanId];
-                            await activeSock.sendMessage(jid, { text: "❌ Invalid selection number. Cancelled.", edit: session.msgKey });
+                            await activeSock.sendMessage(jid, { text: "*_INVALID_*", edit: session.msgKey });
                             return;
                         }
                     } else {
@@ -855,17 +852,11 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     }
                 }
 
-                if (botMode === "eco" && isSubBot && !isAdmin) {
-                    const trimmedText = text.trim().toLowerCase();
-                    const cmdOnly = trimmedText.startsWith(botSettings.prefix) ? trimmedText.slice(botSettings.prefix.length).split(/ +/)[0] : "";
-                    if (cmdOnly !== "rage" && cmdOnly !== "link" && cmdOnly !== "dc" && cmdOnly !== "bots") {
-                        return;
-                    }
+                if (botMode === "eco" && isSubBot) {
+                    return;
                 }
 
                 if (rr1Session.active && rr1Session.targetJid === jid) {
-                    if (botMode === "eco" && isSubBot && !isAdmin) return;
-
                     const msgSenderClean = cleanPhoneNumber(message.key.fromMe ? activeSock.user.id : (message.key.participant || jid));
                     const targetClean = cleanPhoneNumber(rr1Session.targetParticipant);
 
@@ -880,8 +871,6 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                 if (!isAdmin && !isCoAdmin) return; 
 
                 if (activeReactionEmoji && message.key) {
-                    if (botMode === "eco" && isSubBot && !isAdmin) return;
-
                     const isCommand = text.startsWith(botSettings.prefix);
                     const cmdName = isCommand ? text.slice(botSettings.prefix.length).trim().split(/ +/)[0].toLowerCase() : "";
                     
@@ -909,13 +898,13 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                             coAdmins = coAdmins.filter(num => num !== targetCoAdmin);
                             delete decoSessions[senderCleanId];
                             await activeSock.sendMessage(jid, { 
-                                text: `✅ Successfully removed *${targetCoAdmin}* from Co-Admins.`,
+                                text: "*_CO-ADMIN DELETED_*",
                                 edit: session.msgKey
                             });
                             return;
                         } else {
                             delete decoSessions[senderCleanId];
-                            await activeSock.sendMessage(jid, { text: "❌ Invalid selection number. Cancelled.", edit: session.msgKey });
+                            await activeSock.sendMessage(jid, { text: "*_INVALID_*", edit: session.msgKey });
                             return;
                         }
                     } else {
@@ -969,13 +958,13 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
 
                         if (choice === '3' || choice === 'lyrics' || choice === 'lyric' || choice === 'l') {
                             delete songSessions[senderCleanId];
-                            await activeSock.sendMessage(jid, { text: `🎵 *${track.name}*\n🎙️ ${track.artists}\n\n🔍 Fetching lyrics...`, edit: mainMsgKey });
+                            await activeSock.sendMessage(jid, { text: "*_FETCHING LYRICS_*", edit: mainMsgKey });
                             const lyrics = await fetchSongLyrics(track.id, track.name, track.artists);
 
                             if (lyrics) {
                                 await activeSock.sendMessage(jid, { text: `📜 *LYRICS*\n\n🎵 *Song:* ${track.name}\n🎙️ *Artist:* ${track.artists}\n\n${lyrics}` }, { quoted: message });
                             } else {
-                                await activeSock.sendMessage(jid, { text: `❌ Sorry, lyrics not found for *${track.name}*.`, edit: mainMsgKey });
+                                await activeSock.sendMessage(jid, { text: "*_NOT FOUND_*", edit: mainMsgKey });
                             }
                             return;
                         }
@@ -984,7 +973,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                         delete songSessions[senderCleanId]; 
 
                         if (track) {
-                            await activeSock.sendMessage(jid, { text: `🎵 *${track.name}*\n🎙️ ${track.artists}\n\n⬇️ Downloading...`, edit: mainMsgKey });
+                            await activeSock.sendMessage(jid, { text: "*_DOWNLOADING_*", edit: mainMsgKey });
                             let audioBuffer = null;
                             if (track.quality_urls && track.quality_urls.length > 0) {
                                 for (const qualityObj of track.quality_urls) {
@@ -1002,7 +991,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                                     await activeSock.sendMessage(jid, { audio: audioBuffer, mimetype: 'audio/mp4', ptt: false }, { quoted: message });
                                 }
                             } else {
-                                await activeSock.sendMessage(jid, { text: "❌ Error downloading file.", edit: mainMsgKey });
+                                await activeSock.sendMessage(jid, { text: "*_FAILED_*", edit: mainMsgKey });
                             }
                             return;
                         }
@@ -1016,34 +1005,34 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
 
                 if (command === "ping") {
                     const startTime = Date.now();
-                    const sentMsg = await activeSock.sendMessage(jid, { text: "⏳ Pinging..." }, { quoted: message });
-                    await activeSock.sendMessage(jid, { text: `🏓 Pong!\n⚡ Latency: ${Date.now() - startTime}ms`, edit: sentMsg.key });
+                    const sentMsg = await activeSock.sendMessage(jid, { text: "*_PINGING_*" }, { quoted: message });
+                    await activeSock.sendMessage(jid, { text: `*_PONG ${Date.now() - startTime}MS_*`, edit: sentMsg.key });
                 } 
                 else if (command === "eco") {
-                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "⚠️ Only the main Owner can switch bot modes." }, { quoted: message });
+                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "*_OWNER ONLY_*" }, { quoted: message });
                     botMode = "eco";
-                    await activeSock.sendMessage(jid, { text: `⚡ *MODE CHANGED:* ECO MODE Activated! Only the main bot will handle tasks and requests.` }, { quoted: message });
+                    await activeSock.sendMessage(jid, { text: "*_ECO MODE ON 🌿_*_`" }, { quoted: message });
                 }
                 else if (command === "rage") {
-                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "⚠️ Only the main Owner can switch bot modes." }, { quoted: message });
+                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "*_OWNER ONLY_*" }, { quoted: message });
                     botMode = "rage";
-                    await activeSock.sendMessage(jid, { text: `🔥 *MODE CHANGED:* RAGE MODE Activated! All active bots will execute tasks simultaneously!` }, { quoted: message });
+                    await activeSock.sendMessage(jid, { text: "*_RAGE MODE ON ⚡_*" }, { quoted: message });
                 }
                 else if (command === "help") {
                     const localVideoPath = path.join(__dirname, "help.mp4");
                     try {
                         if (!fs.existsSync(localVideoPath)) {
-                            return await activeSock.sendMessage(jid, { text: "❌ Error: `help.mp4` missing!" }, { quoted: message });
+                            return await activeSock.sendMessage(jid, { text: "*_ERROR_*" }, { quoted: message });
                         }
                         const videoBuffer = fs.readFileSync(localVideoPath);
                         await activeSock.sendMessage(jid, { video: videoBuffer, caption: `╔═⟪  *_XNS 999+_*  𔒝    ⟫═╗\n\n> *_REPLY WITH :_*\n\n> 1 →  *_TXT MENU_*\n> 2 →  *_IMG MENU_*`, gifPlayback: true }, { quoted: message });
                         helpActiveSessions[senderCleanId] = true;
                     } catch (err) {
-                        await activeSock.sendMessage(jid, { text: "❌ Error sending help video." });
+                        await activeSock.sendMessage(jid, { text: "*_ERROR_*" });
                     }
                 }
                 else if (command === "stats") {
-                    if (!isAdmin && !isCoAdmin) return activeSock.sendMessage(jid, { text: "⚠️ Admin only." }, { quoted: message });
+                    if (!isAdmin && !isCoAdmin) return activeSock.sendMessage(jid, { text: "*_ADMIN ONLY_*" }, { quoted: message });
 
                     const startTimeStats = Date.now();
                     const mem = process.memoryUsage();
@@ -1068,7 +1057,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
 ➤ 𝗕𝗼𝘁 𝗡𝗮𝗺𝗲    » v12 xns
 ➤ 𝗕𝗼𝘁 𝗠𝗼𝗱𝗲    » ${botMode.toUpperCase()}
 ➤ 𝗣𝗿𝗲𝗳𝗶𝘅      » ${botSettings.prefix}
-➤ 𝗔𝗰𝘁𝗶𝘃𝗲 𝗕𝗼𝘁𝘀 » ${Object.keys(pairedSubBots).length + 1} (Main + ${Object.keys(pairedSubBots).length} Subs)
+➤ 𝗔𝗰𝘁𝗶𝘃𝗲 𝗕𝗼𝘁𝘀 » ${Object.keys(pairedSubBots).length + 1} (Manager + ${Object.keys(pairedSubBots).length} Subs)
 ➤ 𝗥𝗔𝗠 𝗨𝘀𝗮𝗴𝗲  » ${ramUsage}
 ➤ 𝗨𝗽𝘁𝗶𝗺𝗲      » ${uptimeStr}
 ➤ 𝗟𝗮𝘁𝗲𝗻𝗰𝘆    » ${latency}
@@ -1094,7 +1083,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                                 gifPlayback: true
                             }, { quoted: message });
                         } else {
-                            await activeSock.sendMessage(jid, { text: statsCaption + `\n\n⚠️ Note: \`stats.mp4\` file not found in bot folder!` }, { quoted: message });
+                            await activeSock.sendMessage(jid, { text: statsCaption }, { quoted: message });
                         }
                     } catch (e) {
                         await activeSock.sendMessage(jid, { text: statsCaption }, { quoted: message });
@@ -1103,7 +1092,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                 else if (command === "vn") {
                     const ttsText = args.join(" ");
                     if (!ttsText) {
-                        return activeSock.sendMessage(jid, { text: `⚠️ Usage: ${botSettings.prefix}vn <text to speak>` }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_PROVIDE TEXT_*" }, { quoted: message });
                     }
 
                     try {
@@ -1122,17 +1111,17 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                         }, { quoted: message });
 
                     } catch (e) {
-                        await activeSock.sendMessage(jid, { text: `❌ VN Error: ${e.message}` }, { quoted: message });
+                        await activeSock.sendMessage(jid, { text: "*_ERROR_*" }, { quoted: message });
                     }
                 }
                 else if (command === "s") {
                     const query = args.join(" ");
-                    if (!query) return activeSock.sendMessage(jid, { text: `⚠️ Usage: ${botSettings.prefix}s <song name>` }, { quoted: message });
+                    if (!query) return activeSock.sendMessage(jid, { text: "*_PROVIDE SONG NAME_*" }, { quoted: message });
 
-                    const searchMsg = await activeSock.sendMessage(jid, { text: `🔍 Searching for: *${query}*...` }, { quoted: message });
+                    const searchMsg = await activeSock.sendMessage(jid, { text: "*_SEARCHING_*" }, { quoted: message });
                     try {
                         const tracks = await searchSongs(query);
-                        if (tracks.length === 0) return activeSock.sendMessage(jid, { text: "❌ No songs found.", edit: searchMsg.key });
+                        if (tracks.length === 0) return activeSock.sendMessage(jid, { text: "*_NOT FOUND_*", edit: searchMsg.key });
 
                         songSessions[senderCleanId] = { step: 'SELECT_SONG', tracks: tracks, msgKey: searchMsg.key }; 
                         let listText = `🎵 *Search Results for "${query}"*\n\n`;
@@ -1140,16 +1129,14 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                         listText += `\n👉 *Reply with a number (1-5)*`;
                         await activeSock.sendMessage(jid, { text: listText, edit: searchMsg.key });
                     } catch (err) {
-                        await activeSock.sendMessage(jid, { text: "❌ API Error.", edit: searchMsg.key });
+                        await activeSock.sendMessage(jid, { text: "*_ERROR_*", edit: searchMsg.key });
                     }
                 }
                 else if (command === "live") {
-                    if (botMode === "eco" && isSubBot && !isAdmin) return;
-
                     const amount = parseInt(args.shift());
                     const liveText = args.join(" ");
-                    if (isNaN(amount) || amount <= 0 || !liveText) return activeSock.sendMessage(jid, { text: `⚠️ Usage: ${botSettings.prefix}live <amount> <text>` }, { quoted: message });
-                    if (isLiveRunning) return activeSock.sendMessage(jid, { text: "⚠️ Live is already running." }, { quoted: message });
+                    if (isNaN(amount) || amount <= 0 || !liveText) return activeSock.sendMessage(jid, { text: "*_INVALID USAGE_*" }, { quoted: message });
+                    if (isLiveRunning) return activeSock.sendMessage(jid, { text: "*_ALREADY RUNNING_*`" }, { quoted: message });
 
                     isLiveRunning = true;
                     const emojis = ["⚡", "❄️", "🌿", "🪻", "🫥", "😏", "😣", "😥"];
@@ -1173,46 +1160,46 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     })();
                 }
                 else if (command === "unlive") {
-                    if (!isLiveRunning) return activeSock.sendMessage(jid, { text: "⚠️ Live not running." }, { quoted: message });
+                    if (!isLiveRunning) return activeSock.sendMessage(jid, { text: "*_NOT RUNNING_*`" }, { quoted: message });
                     isLiveRunning = false;
-                    activeSock.sendMessage(jid, { text: "🛑 Stopped." }, { quoted: message });
+                    await activeSock.sendMessage(jid, { text: "*_LIVE STOPPED_*`" }, { quoted: message });
                 }
                 else if (command === "react") {
                     const emoji = args[0];
-                    if (!emoji) return activeSock.sendMessage(jid, { text: `⚠️ Usage: ${botSettings.prefix}react <emoji>` }, { quoted: message });
+                    if (!emoji) return activeSock.sendMessage(jid, { text: "*_PROVIDE EMOJI_*`" }, { quoted: message });
                     activeReactionEmoji = emoji;
-                    await activeSock.sendMessage(jid, { text: `*_XNSV12 REACT START - ${emoji}_*` }, { quoted: message });
+                    await activeSock.sendMessage(jid, { text: `*_REACT MODE ON_*` }, { quoted: message });
                 }
                 else if (command === "rof") {
-                    if (!activeReactionEmoji) return activeSock.sendMessage(jid, { text: "⚠️ Not active." }, { quoted: message });
+                    if (!activeReactionEmoji) return activeSock.sendMessage(jid, { text: "*_NOT ACTIVE_*`" }, { quoted: message });
                     activeReactionEmoji = null;
-                    await activeSock.sendMessage(jid, { text: `*_XNS12 REACT STOPPED_*` }, { quoted: message });
+                    await activeSock.sendMessage(jid, { text: `*_REACT MODE OFF_*` }, { quoted: message });
                 }
                 else if (command === "co") {
-                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "⚠️ Owner only." }, { quoted: message });
+                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "*_OWNER ONLY_*`" }, { quoted: message });
                     const quotedMessage = message.message?.extendedTextMessage?.contextInfo;
-                    if (!quotedMessage || !quotedMessage.participant) return activeSock.sendMessage(jid, { text: `⚠️ Reply to a user with ${botSettings.prefix}co` }, { quoted: message });
+                    if (!quotedMessage || !quotedMessage.participant) return activeSock.sendMessage(jid, { text: "*_REPLY TO A USER_*`" }, { quoted: message });
                     const targetNum = cleanPhoneNumber(quotedMessage.participant);
-                    if (coAdmins.includes(targetNum)) return activeSock.sendMessage(jid, { text: `⚠️ Already Co-Admin.` }, { quoted: message });
+                    if (coAdmins.includes(targetNum)) return activeSock.sendMessage(jid, { text: "*_ALREADY CO-ADMIN_*`" }, { quoted: message });
                     coAdmins.push(targetNum);
-                    await activeSock.sendMessage(jid, { text: `👑 Promoted *${targetNum}* to Co-Admin!` }, { quoted: message });
+                    await activeSock.sendMessage(jid, { text: "*_CO-ADMIN ADDED_*`" }, { quoted: message });
                 }
                 else if (command === "tempadmin") {
-                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "⚠️ Owner only." }, { quoted: message });
+                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "*_OWNER ONLY_*`" }, { quoted: message });
                     const minutes = parseInt(args[0]);
                     const quotedMessage = message.message?.extendedTextMessage?.contextInfo;
-                    if (isNaN(minutes) || minutes <= 0 || !quotedMessage?.participant) return activeSock.sendMessage(jid, { text: `⚠️ Reply to a user with ${botSettings.prefix}tempadmin <minutes>` }, { quoted: message });
+                    if (isNaN(minutes) || minutes <= 0 || !quotedMessage?.participant) return activeSock.sendMessage(jid, { text: "*_INVALID USAGE_*`" }, { quoted: message });
                     const targetNum = cleanPhoneNumber(quotedMessage.participant);
                     if (tempAdmins[targetNum]) clearTimeout(tempAdmins[targetNum]);
                     tempAdmins[targetNum] = setTimeout(async () => {
                         delete tempAdmins[targetNum];
-                        try { await activeSock.sendMessage(jid, { text: `⏰ Temp admin expired for *${targetNum}*.` }); } catch (e) {}
+                        try { await activeSock.sendMessage(jid, { text: "*_TEMP ADMIN EXPIRED_*`" }); } catch (e) {}
                     }, minutes * 60 * 1000);
-                    await activeSock.sendMessage(jid, { text: `⏱️ Granted temporary admin access to *${targetNum}* for *${minutes} minute(s)*!` }, { quoted: message });
+                    await activeSock.sendMessage(jid, { text: "*_TEMP ADMIN ON_*`" }, { quoted: message });
                 }
                 else if (command === "deco") {
-                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "⚠️ Only the main Owner can manage/delete Co-Admins." }, { quoted: message });
-                    if (coAdmins.length === 0) return activeSock.sendMessage(jid, { text: "⚠️ There are currently no active Co-Admins." }, { quoted: message });
+                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "*_OWNER ONLY_*`" }, { quoted: message });
+                    if (coAdmins.length === 0) return activeSock.sendMessage(jid, { text: "*_NO CO-ADMINS_*`" }, { quoted: message });
 
                     let listText = `📋 *ACTIVE CO-ADMINS*\n\n`;
                     coAdmins.forEach((num, index) => {
@@ -1224,10 +1211,10 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     decoSessions[senderCleanId] = { list: [...coAdmins], msgKey: sentMsg.key };
                 }
                 else if (command === "listco") {
-                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "⚠️ Owner only." }, { quoted: message });
+                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "*_OWNER ONLY_*`" }, { quoted: message });
 
                     if (coAdmins.length === 0) {
-                        return activeSock.sendMessage(jid, { text: "⚠️ There are currently no active Co-Admins." }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_NO CO-ADMINS_*`" }, { quoted: message });
                     }
 
                     let listText = `👑 *ACTIVE CO-ADMINS LIST*\n\n`;
@@ -1238,14 +1225,14 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     await activeSock.sendMessage(jid, { text: listText.trim() }, { quoted: message });
                 }
                 else if (command === "inyou") {
-                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "⚠️ Owner only." }, { quoted: message });
+                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "*_OWNER ONLY_*`" }, { quoted: message });
 
                     try {
                         const chats = await activeSock.groupFetchAllParticipating();
                         const groupJids = Object.keys(chats);
 
                         if (groupJids.length === 0) {
-                            return activeSock.sendMessage(jid, { text: "⚠️ Bot is not in any groups currently." }, { quoted: message });
+                            return activeSock.sendMessage(jid, { text: "*_NO GROUPS_*`" }, { quoted: message });
                         }
 
                         let listText = "";
@@ -1259,26 +1246,26 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
 
                         await activeSock.sendMessage(jid, { text: listText.trim() }, { quoted: message });
                     } catch (e) {
-                        await activeSock.sendMessage(jid, { text: `❌ Error fetching groups: ${e.message}` }, { quoted: message });
+                        await activeSock.sendMessage(jid, { text: "*_ERROR_*`" }, { quoted: message });
                     }
                 }
                 else if (command === "leave") {
-                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "⚠️ Owner only." }, { quoted: message });
+                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "*_OWNER ONLY_*`" }, { quoted: message });
 
                     const groupNum = parseInt(args[0]);
                     if (isNaN(groupNum) || groupNum <= 0) {
-                        return activeSock.sendMessage(jid, { text: `⚠️ Usage: ${botSettings.prefix}leave <group number>\nUse ${botSettings.prefix}inyou first to see list.` }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_INVALID NUMBER_*`" }, { quoted: message });
                     }
 
                     if (!global.inyouGroupsCache || !global.inyouGroupsCache[senderCleanId]) {
-                        return activeSock.sendMessage(jid, { text: `⚠️ Please run *${botSettings.prefix}inyou* first to load the group numbers!` }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_RUN INYOU FIRST_*`" }, { quoted: message });
                     }
 
                     const groupJids = global.inyouGroupsCache[senderCleanId];
                     const targetGroupJid = groupJids[groupNum - 1];
 
                     if (!targetGroupJid) {
-                        return activeSock.sendMessage(jid, { text: `❌ Invalid group number! Check the list from ${botSettings.prefix}inyou.` }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_INVALID GROUP_*`" }, { quoted: message });
                     }
 
                     const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
@@ -1290,28 +1277,28 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     await activeSock.sendMessage(jid, { text: `🔐 *LEAVE GROUP VERIFICATION*\n\nOTP Code: \`${otpCode}\`\n\n👉 Type *${botSettings.prefix}otp ${otpCode}* to confirm and leave this group.` }, { quoted: message });
                 }
                 else if (command === "otp") {
-                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "⚠️ Owner only." }, { quoted: message });
+                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "*_OWNER ONLY_*`" }, { quoted: message });
 
                     const userOtp = args[0];
                     if (!inyouLeaveSessions[senderCleanId]) {
-                        return activeSock.sendMessage(jid, { text: `⚠️ No pending leave request found! Use ${botSettings.prefix}leave <num> first.` }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_NO REQUEST_*`" }, { quoted: message });
                     }
 
                     if (userOtp !== inyouLeaveSessions[senderCleanId].otp) {
-                        return activeSock.sendMessage(jid, { text: `❌ Invalid OTP Code!` }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_INVALID OTP_*`" }, { quoted: message });
                     }
 
                     const targetGroupJid = inyouLeaveSessions[senderCleanId].targetGroupJid;
                     delete inyouLeaveSessions[senderCleanId];
 
-                    await activeSock.sendMessage(jid, { text: `👋 OTP Verified! Leaving group securely...` }, { quoted: message });
+                    await activeSock.sendMessage(jid, { text: "*_LEAVING GROUP_*`" }, { quoted: message });
                     await sleep(1000);
                     await activeSock.groupLeave(targetGroupJid);
                 }
                 else if (command === "lid") {
                     const quotedContext = message.message?.extendedTextMessage?.contextInfo;
                     if (!quotedContext || !quotedContext.participant) {
-                        return activeSock.sendMessage(jid, { text: `⚠️ Please reply to any user's message with ${botSettings.prefix}lid` }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_REPLY TO USER_*`" }, { quoted: message });
                     }
 
                     const targetParticipant = quotedContext.participant;
@@ -1322,29 +1309,27 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                 }
                 else if (command === "d") {
                     if (!jid.endsWith("@g.us")) {
-                        return activeSock.sendMessage(jid, { text: "⚠️ This command can only be used in groups!" }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_GROUP ONLY_*`" }, { quoted: message });
                     }
 
                     const quotedContext = message.message?.extendedTextMessage?.contextInfo;
                     if (!quotedContext || !quotedContext.participant) {
-                        return activeSock.sendMessage(jid, { text: `⚠️ Please reply/swipe to a user's message with ${botSettings.prefix}d to auto-delete their messages!` }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_REPLY TO USER_*`" }, { quoted: message });
                     }
 
                     const targetParticipant = quotedContext.participant;
-                    const targetPhone = cleanPhoneNumber(targetParticipant);
-
                     if (!autoDeleteUsers[jid]) autoDeleteUsers[jid] = {};
                     autoDeleteUsers[jid][targetParticipant] = true;
 
-                    await activeSock.sendMessage(jid, { text: `🛡️ *Auto-Delete Enabled:* Bot will now delete all messages from *${targetPhone}* until !sd is used.` }, { quoted: message });
+                    await activeSock.sendMessage(jid, { text: "*_AUTO-DELETE ON_*`" }, { quoted: message });
                 }
                 else if (command === "sd") {
                     if (!jid.endsWith("@g.us")) {
-                        return activeSock.sendMessage(jid, { text: "⚠️ This command can only be used in groups!" }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_GROUP ONLY_*`" }, { quoted: message });
                     }
 
                     if (!autoDeleteUsers[jid] || Object.keys(autoDeleteUsers[jid]).length === 0) {
-                        return activeSock.sendMessage(jid, { text: `⚠️ No users are currently in the auto-delete/muted list for this group.` }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_LIST EMPTY_*`" }, { quoted: message });
                     }
 
                     const participants = Object.keys(autoDeleteUsers[jid]);
@@ -1359,15 +1344,14 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     sdSessions[senderCleanId] = { jid: jid, list: participants, msgKey: sentMsg.key };
                 }
                 else if (command === "msg") {
-                    if (botMode === "eco" && isSubBot && !isAdmin) return;
                     const nameBase = args.join(" ");
                     if (!nameBase) {
-                        return activeSock.sendMessage(jid, { text: `⚠️ Usage: ${botSettings.prefix}msg <name_base>` }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_PROVIDE NAME_*`" }, { quoted: message });
                     }
 
                     let targetSocks = [{ sock: activeSock }];
                     if (botMode === "rage") {
-                        if (socketId !== "main" && activeSock) targetSocks.push({ sock: activeSock });
+                        if (socketId !== "main" && mainSocket) targetSocks.push({ sock: mainSocket });
                         for (const bId in pairedSubBots) {
                             if (pairedSubBots[bId]?.socket && bId !== socketId) {
                                 targetSocks.push({ sock: pairedSubBots[bId].socket });
@@ -1390,17 +1374,16 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     }
                 }
                 else if (command === "msgd") {
-                    if (botMode === "eco" && isSubBot && !isAdmin) return;
                     const delayMs = parseInt(args.shift());
                     const nameBase = args.join(" ");
 
                     if (isNaN(delayMs) || delayMs < 0 || !nameBase) {
-                        return activeSock.sendMessage(jid, { text: `⚠️ Usage: ${botSettings.prefix}msgd <delay_ms> <name_base>` }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_INVALID USAGE_*`" }, { quoted: message });
                     }
 
                     let targetSocks = [{ sock: activeSock }];
                     if (botMode === "rage") {
-                        if (socketId !== "main" && activeSock) targetSocks.push({ sock: activeSock });
+                        if (socketId !== "main" && mainSocket) targetSocks.push({ sock: mainSocket });
                         for (const bId in pairedSubBots) {
                             if (pairedSubBots[bId]?.socket && bId !== socketId) {
                                 targetSocks.push({ sock: pairedSubBots[bId].socket });
@@ -1424,15 +1407,14 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     }
                 }
                 else if (command === "loop") {
-                    if (botMode === "eco" && isSubBot && !isAdmin) return;
                     const nameBase = args.join(" ");
                     if (!nameBase) {
-                        return activeSock.sendMessage(jid, { text: `⚠️ Usage: ${botSettings.prefix}loop <name_base>` }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_PROVIDE NAME_*`" }, { quoted: message });
                     }
 
                     let targetSocks = [{ sock: activeSock, id: socketId }];
                     if (botMode === "rage") {
-                        if (socketId !== "main" && activeSock) targetSocks.push({ sock: activeSock, id: "main" });
+                        if (socketId !== "main" && mainSocket) targetSocks.push({ sock: mainSocket, id: "main" });
                         for (const bId in pairedSubBots) {
                             if (pairedSubBots[bId]?.socket && bId !== socketId) {
                                 targetSocks.push({ sock: pairedSubBots[bId].socket, id: bId });
@@ -1440,7 +1422,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                         }
                     }
 
-                    await activeSock.sendMessage(jid, { text: `*_MSG LOOP START - ${nameBase} 2000MS_*` }, { quoted: message });
+                    await activeSock.sendMessage(jid, { text: "*_LOOP START_*`" }, { quoted: message });
 
                     const blocks = [
                         MSG_1.replace(/<name>/g, nameBase),
@@ -1466,7 +1448,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     });
                 }
                 else if (command === "sloop") {
-                    if (!isAdmin && !isCoAdmin) return activeSock.sendMessage(jid, { text: "⚠️ Only admins can use this command." }, { quoted: message });
+                    if (!isAdmin && !isCoAdmin) return activeSock.sendMessage(jid, { text: "*_ADMIN ONLY_*`" }, { quoted: message });
 
                     let targetSocks = [{ id: socketId }];
                     if (botMode === "rage") {
@@ -1483,22 +1465,20 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     });
 
                     if (stoppedCount > 0) {
-                        await activeSock.sendMessage(jid, { text: `*_MSG LOOP STOPPED_*` }, { quoted: message });
+                        await activeSock.sendMessage(jid, { text: "*_LOOP STOPPED_*`" }, { quoted: message });
                     } else {
-                        await activeSock.sendMessage(jid, { text: "⚠️ Infinite spam loop is not running in this group." }, { quoted: message });
+                        await activeSock.sendMessage(jid, { text: "*_NOT RUNNING_*`" }, { quoted: message });
                     }
                 }
                 else if (command === "for") {
-                    if (botMode === "eco" && isSubBot && !isAdmin) return;
-
                     const quotedContext = message.message?.extendedTextMessage?.contextInfo;
                     if (!quotedContext || !quotedContext.quotedMessage) {
-                        return activeSock.sendMessage(jid, { text: `⚠️ Please reply/swipe to any message to forward!` }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_REPLY TO MESSAGE_*`" }, { quoted: message });
                     }
 
                     let targetSocks = [{ sock: activeSock, id: socketId }];
                     if (botMode === "rage") {
-                        if (socketId !== "main" && activeSock) targetSocks.push({ sock: activeSock, id: "main" });
+                        if (socketId !== "main" && mainSocket) targetSocks.push({ sock: mainSocket, id: "main" });
                         for (const bId in pairedSubBots) {
                             if (pairedSubBots[bId]?.socket && bId !== socketId) {
                                 targetSocks.push({ sock: pairedSubBots[bId].socket, id: bId });
@@ -1506,7 +1486,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                         }
                     }
 
-                    await activeSock.sendMessage(jid, { text: `*_FORWARD LOOP START_*` }, { quoted: message });
+                    await activeSock.sendMessage(jid, { text: "*_FORWARD START_*`" }, { quoted: message });
 
                     const forwardedMsgContent = quotedContext.quotedMessage;
 
@@ -1527,7 +1507,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     });
                 }
                 else if (command === "sfor") {
-                    if (!isAdmin && !isCoAdmin) return activeSock.sendMessage(jid, { text: "⚠️ Only admins can use this command." }, { quoted: message });
+                    if (!isAdmin && !isCoAdmin) return activeSock.sendMessage(jid, { text: "*_ADMIN ONLY_*`" }, { quoted: message });
 
                     let targetSocks = [{ id: socketId }];
                     if (botMode === "rage") {
@@ -1544,24 +1524,24 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     });
 
                     if (stoppedCount > 0) {
-                        await activeSock.sendMessage(jid, { text: `*_FORWARD LOOP STOPPED_*` }, { quoted: message });
+                        await activeSock.sendMessage(jid, { text: "*_FORWARD STOPPED_*`" }, { quoted: message });
                     } else {
-                        await activeSock.sendMessage(jid, { text: "⚠️ Forward loop is not running in this group." }, { quoted: message });
+                        await activeSock.sendMessage(jid, { text: "*_NOT RUNNING_*`" }, { quoted: message });
                     }
                 }
                 else if (command === "nc") {
                     if (!jid.endsWith("@g.us")) {
-                        return activeSock.sendMessage(jid, { text: "⚠️ The !nc command can only be used inside groups!" }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_GROUP ONLY_*`" }, { quoted: message });
                     }
 
                     const baseText = args.join(" ");
                     if (!baseText) {
-                        return activeSock.sendMessage(jid, { text: `⚠️ Usage: ${botSettings.prefix}nc <base text>` }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_PROVIDE TEXT_*`" }, { quoted: message });
                     }
 
                     let targetSocks = [{ sock: activeSock, id: socketId }];
                     if (botMode === "rage") {
-                        if (socketId !== "main" && activeSock) targetSocks.push({ sock: activeSock, id: "main" });
+                        if (socketId !== "main" && mainSocket) targetSocks.push({ sock: mainSocket, id: "main" });
                         for (const bId in pairedSubBots) {
                             if (pairedSubBots[bId]?.socket && bId !== socketId) {
                                 targetSocks.push({ sock: pairedSubBots[bId].socket, id: bId });
@@ -1569,7 +1549,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                         }
                     }
 
-                    await activeSock.sendMessage(jid, { text: `*_NC LOOP START - ${baseText}_*` }, { quoted: message });
+                    await activeSock.sendMessage(jid, { text: "*_NC START_*`" }, { quoted: message });
 
                     targetSocks.forEach(({ sock: s, id: sId }) => {
                         if (!ncSessions[sId]) ncSessions[sId] = {};
@@ -1590,7 +1570,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                 }
                 else if (command === "snc") {
                     if (!jid.endsWith("@g.us")) {
-                        return activeSock.sendMessage(jid, { text: "⚠️ This command can only be used inside groups." }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_GROUP ONLY_*`" }, { quoted: message });
                     }
 
                     let targetSocks = [{ id: socketId }];
@@ -1608,24 +1588,24 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     });
 
                     if (stoppedCount > 0) {
-                        await activeSock.sendMessage(jid, { text: `*_NC LOOP STOPPED_*` }, { quoted: message });
+                        await activeSock.sendMessage(jid, { text: "*_NC STOPPED_*`" }, { quoted: message });
                     } else {
-                        await activeSock.sendMessage(jid, { text: "⚠️ NC Loop is not running." }, { quoted: message });
+                        await activeSock.sendMessage(jid, { text: "*_NOT RUNNING_*`" }, { quoted: message });
                     }
                 }
                 else if (command === "nc1") {
                     if (!jid.endsWith("@g.us")) {
-                        return activeSock.sendMessage(jid, { text: "⚠️ The !nc1 command can only be used inside groups!" }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_GROUP ONLY_*`" }, { quoted: message });
                     }
 
                     const baseText = args.join(" ");
                     if (!baseText) {
-                        return activeSock.sendMessage(jid, { text: `⚠️ Usage: ${botSettings.prefix}nc1 <base text>` }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_PROVIDE TEXT_*`" }, { quoted: message });
                     }
 
                     let targetSocks = [{ sock: activeSock, id: socketId }];
                     if (botMode === "rage") {
-                        if (socketId !== "main" && activeSock) targetSocks.push({ sock: activeSock, id: "main" });
+                        if (socketId !== "main" && mainSocket) targetSocks.push({ sock: mainSocket, id: "main" });
                         for (const bId in pairedSubBots) {
                             if (pairedSubBots[bId]?.socket && bId !== socketId) {
                                 targetSocks.push({ sock: pairedSubBots[bId].socket, id: bId });
@@ -1633,7 +1613,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                         }
                     }
 
-                    await activeSock.sendMessage(jid, { text: `*_NC1 LOOP START - ${baseText}_*` }, { quoted: message });
+                    await activeSock.sendMessage(jid, { text: "*_NC1 START_*`" }, { quoted: message });
 
                     targetSocks.forEach(({ sock: s, id: sId }, idx) => {
                         if (!nc1Sessions[sId]) nc1Sessions[sId] = {};
@@ -1656,7 +1636,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                 }
                 else if (command === "snc1") {
                     if (!jid.endsWith("@g.us")) {
-                        return activeSock.sendMessage(jid, { text: "⚠️ This command can only be used inside groups." }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_GROUP ONLY_*`" }, { quoted: message });
                     }
 
                     let targetSocks = [{ id: socketId }];
@@ -1674,24 +1654,24 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     });
 
                     if (stoppedCount > 0) {
-                        await activeSock.sendMessage(jid, { text: `*_NC1 LOOP STOPPED_*` }, { quoted: message });
+                        await activeSock.sendMessage(jid, { text: "*_NC1 STOPPED_*`" }, { quoted: message });
                     } else {
-                        await activeSock.sendMessage(jid, { text: "⚠️ NC1 Loop is not running." }, { quoted: message });
+                        await activeSock.sendMessage(jid, { text: "*_NOT RUNNING_*`" }, { quoted: message });
                     }
                 }
                 else if (command === "dnc") {
                     if (!jid.endsWith("@g.us")) {
-                        return activeSock.sendMessage(jid, { text: "⚠️ The !dnc command can only be used inside groups!" }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_GROUP ONLY_*`" }, { quoted: message });
                     }
 
                     const baseText = args.join(" ");
                     if (!baseText) {
-                        return activeSock.sendMessage(jid, { text: `⚠️ Usage: ${botSettings.prefix}dnc <base text>` }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_PROVIDE TEXT_*`" }, { quoted: message });
                     }
 
                     let targetSocks = [{ sock: activeSock, id: socketId }];
                     if (botMode === "rage") {
-                        if (socketId !== "main" && activeSock) targetSocks.push({ sock: activeSock, id: "main" });
+                        if (socketId !== "main" && mainSocket) targetSocks.push({ sock: mainSocket, id: "main" });
                         for (const bId in pairedSubBots) {
                             if (pairedSubBots[bId]?.socket && bId !== socketId) {
                                 targetSocks.push({ sock: pairedSubBots[bId].socket, id: bId });
@@ -1699,7 +1679,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                         }
                     }
 
-                    await activeSock.sendMessage(jid, { text: `*_DNC LOOP START - ${baseText}_*` }, { quoted: message });
+                    await activeSock.sendMessage(jid, { text: "*_DNC START_*`" }, { quoted: message });
 
                     targetSocks.forEach(({ sock: s, id: sId }, idx) => {
                         if (!dncSessions[sId]) dncSessions[sId] = {};
@@ -1722,7 +1702,7 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                 }
                 else if (command === "sdnc") {
                     if (!jid.endsWith("@g.us")) {
-                        return activeSock.sendMessage(jid, { text: "⚠️ This command can only be used inside groups." }, { quoted: message });
+                        return activeSock.sendMessage(jid, { text: "*_GROUP ONLY_*`" }, { quoted: message });
                     }
 
                     let targetSocks = [{ id: socketId }];
@@ -1740,37 +1720,37 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     });
 
                     if (stoppedCount > 0) {
-                        await activeSock.sendMessage(jid, { text: `*_DNC LOOP STOPPED_*` }, { quoted: message });
+                        await activeSock.sendMessage(jid, { text: "*_DNC STOPPED_*`" }, { quoted: message });
                     } else {
-                        await activeSock.sendMessage(jid, { text: "⚠️ DNC Loop is not running." }, { quoted: message });
+                        await activeSock.sendMessage(jid, { text: "*_NOT RUNNING_*`" }, { quoted: message });
                     }
                 }
                 else if (command === "link") {
-                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "⚠️ Owner only." }, { quoted: message });
+                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "*_OWNER ONLY_*`" }, { quoted: message });
                     const targetNum = cleanPhoneNumber(args[0]);
-                    if (!validPhoneNumber(targetNum)) return activeSock.sendMessage(jid, { text: `⚠️ Usage: ${botSettings.prefix}link <number>` }, { quoted: message });
-                    const sentMsg = await activeSock.sendMessage(jid, { text: `⏳ Initializing sub-bot for *${targetNum}*...` }, { quoted: message });
+                    if (!validPhoneNumber(targetNum)) return activeSock.sendMessage(jid, { text: "*_INVALID NUMBER_*`" }, { quoted: message });
+                    const sentMsg = await activeSock.sendMessage(jid, { text: "*_CONNECTING_*`" }, { quoted: message });
                     const botId = generateFiveDigitId();
-                    await createSubBot(botId, targetNum, null, jid, sentMsg.key); 
+                    await createSubBot(botId, targetNum, activeSock, jid, sentMsg.key); 
                 }
                 else if (command === "bots") {
                     const botKeys = Object.keys(pairedSubBots);
-                    if (botKeys.length === 0) return activeSock.sendMessage(jid, { text: "⚠️ No active sub-bots." }, { quoted: message });
+                    if (botKeys.length === 0) return activeSock.sendMessage(jid, { text: "*_NO SUB-BOTS_*`" }, { quoted: message });
                     let botsListText = `🤖 *ACTIVE PAIRED BOTS*\n\n`;
                     botKeys.forEach((id, index) => { botsListText += `BOT ${index + 1} -> ${id}\n`; });
                     await activeSock.sendMessage(jid, { text: botsListText }, { quoted: message });
                 }
                 else if (command === "dc") {
-                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "⚠️ Owner only." }, { quoted: message });
+                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "*_OWNER ONLY_*`" }, { quoted: message });
                     const botId = args[0];
-                    if (!botId || !pairedSubBots[botId]) return activeSock.sendMessage(jid, { text: `⚠️ Usage: ${botSettings.prefix}dc <5-digit id>` }, { quoted: message });
+                    if (!botId || !pairedSubBots[botId]) return activeSock.sendMessage(jid, { text: "*_INVALID ID_*`" }, { quoted: message });
                     try {
                         pairedSubBots[botId].socket.ws?.close();
                         fs.rmSync(pairedSubBots[botId].authDir, { recursive: true, force: true });
                         delete pairedSubBots[botId];
-                        await activeSock.sendMessage(jid, { text: `🔌 Disconnected bot *${botId}*.` }, { quoted: message });
+                        await activeSock.sendMessage(jid, { text: "*_DISCONNECTED_*`" }, { quoted: message });
                     } catch (e) {
-                        await activeSock.sendMessage(jid, { text: `❌ Error: ${e.message}` }, { quoted: message });
+                        await activeSock.sendMessage(jid, { text: "*_ERROR_*`" }, { quoted: message });
                     }
                 }
                 else if (command === "stopall") {
@@ -1786,16 +1766,16 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
                     forwardLoopSessions = {};
                     autoDeleteUsers = {};
 
-                    await activeSock.sendMessage(jid, { text: "🛑 Stopped all active background loops." }, { quoted: message });
+                    await activeSock.sendMessage(jid, { text: "*_STOPPED ALL_*`" }, { quoted: message });
                 }
                 else if (command === "prefix" && args[0]) {
-                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "⚠️ Only the main Owner can change the prefix." }, { quoted: message });
+                    if (!isAdmin) return activeSock.sendMessage(jid, { text: "*_OWNER ONLY_*`" }, { quoted: message });
                     botSettings.prefix = args[0];
                     saveSettings();
-                    activeSock.sendMessage(jid, { text: `✅ Prefix changed to: *${args[0]}*` }, { quoted: message });
+                    await activeSock.sendMessage(jid, { text: "*_PREFIX CHANGED_*`" }, { quoted: message });
                 } 
                 else if (command === "menu") {
-                    activeSock.sendMessage(jid, { text: TEXT_MENU }, { quoted: message });
+                    await activeSock.sendMessage(jid, { text: TEXT_MENU }, { quoted: message });
                 }
             } catch (error) {
                 console.error("Message Handler Error:", error);
@@ -1805,7 +1785,72 @@ function setupMessageHandler(activeSock, isSubBot = false, socketId = "main") {
 }
 
 // ============================================================
-// SUB-BOT CREATOR
+// MAIN MANAGER BOT CREATOR (`auth_main`)
+// ============================================================
+
+async function startMainBot() {
+    if (!fs.existsSync(AUTH_MAIN_DIR)) {
+        fs.mkdirSync(AUTH_MAIN_DIR, { recursive: true });
+    }
+
+    const { state, saveCreds } = await useMultiFileAuthState(AUTH_MAIN_DIR);
+    let version = [2, 3000, 1015901307];
+    try { version = (await fetchLatestBaileysVersion()).version; } catch {}
+
+    mainSocket = makeWASocket({
+        auth: state,
+        version,
+        logger: P({ level: "silent" }),
+        printQRInTerminal: false,
+        browser: Browsers.macOS("Chrome"),
+        markOnlineOnConnect: false,
+        syncFullHistory: false,
+        getMessage: async () => ({ conversation: 'CRASHXNS' })
+    });
+
+    mainSocket.ev.on("creds.update", saveCreds);
+
+    let codeRequested = false;
+
+    mainSocket.ev.on("connection.update", async (update) => {
+        const { connection, lastDisconnect } = update;
+
+        if (!state.creds.registered && !codeRequested) {
+            codeRequested = true;
+            const primaryNum = await ask("📱 Enter your Primary Manager WhatsApp Number (with country code, e.g., 919876543210): ");
+            try {
+                await sleep(3000);
+                const code = await mainSocket.requestPairingCode(primaryNum, CUSTOM_PAIRING_CODE);
+                if (code) {
+                    console.log(`\n🔑 YOUR MANAGER PAIRING CODE: ${formatPairingCode(code)}\n`);
+                }
+            } catch (err) {
+                codeRequested = false;
+                console.error("Pairing Code Error:", err.message);
+            }
+        }
+
+        if (connection === "open") {
+            console.log("\n🟢 PRIMARY MANAGER BOT CONNECTED SUCCESSFULLY!\n");
+            if (!botSettings.adminNumber && mainSocket.user?.id) {
+                botSettings.adminNumber = cleanPhoneNumber(mainSocket.user.id);
+                saveSettings();
+            }
+        }
+
+        if (connection === "close") {
+            const statusCode = getStatusCode(lastDisconnect?.error);
+            if (statusCode !== DisconnectReason.loggedOut) {
+                setTimeout(startMainBot, RECONNECT_DELAY);
+            }
+        }
+    });
+
+    setupMessageHandler(mainSocket, false, "main");
+}
+
+// ============================================================
+// SUB-BOT CREATOR (`multi_auth`)
 // ============================================================
 
 async function createSubBot(botId, targetNum, mainSock = null, ownerJid = null, sentMsgKey = null) {
@@ -1857,10 +1902,10 @@ async function createSubBot(botId, targetNum, mainSock = null, ownerJid = null, 
                 codeRequested = false;
                 try { subSock.ws?.close(); } catch {}
                 if (tgBot && botSettings.telegramAdminId) {
-                    tgBot.sendMessage(botSettings.telegramAdminId, `❌ *Pairing Error:* ${err.message || "Failed to generate pairing code."}`);
+                    tgBot.sendMessage(botSettings.telegramAdminId, "*_PAIRING ERROR_*");
                 } else if (mainSock) {
                     await mainSock.sendMessage(ownerJid, {
-                        text: `❌ *Pairing Error:* ${err.message || "Failed to generate pairing code."}`,
+                        text: "*_PAIRING ERROR_*",
                         edit: sentMsgKey
                     });
                 }
@@ -1876,16 +1921,11 @@ async function createSubBot(botId, targetNum, mainSock = null, ownerJid = null, 
             };
             console.log(`\n🟢 SUB-BOT ${botId} CONNECTED SUCCESSFULLY!\n`);
 
-            if (!botSettings.adminNumber && subSock.user?.id) {
-                botSettings.adminNumber = cleanPhoneNumber(subSock.user.id);
-                saveSettings();
-            }
-
             if (tgBot && botSettings.telegramAdminId) {
-                tgBot.sendMessage(botSettings.telegramAdminId, `✅ *Verification Passed!*\nBOT ${botId} is now active and online!`, { parse_mode: "Markdown" });
+                tgBot.sendMessage(botSettings.telegramAdminId, "*_SUB-BOT CONNECTED_*", { parse_mode: "Markdown" });
             } else if (mainSock && ownerJid && sentMsgKey) {
                 await mainSock.sendMessage(ownerJid, {
-                    text: `✅ *Verification Passed!*\nBOT ${botId} is now active and online!`,
+                    text: "*_SUB-BOT CONNECTED_*",
                     edit: sentMsgKey
                 });
             }
@@ -1952,7 +1992,7 @@ async function createSubBotTelegram(botId, targetNum, tgChatId, tgMsgId) {
                 codeRequested = false;
                 try { subSock.ws?.close(); } catch {}
                 if (tgBot) {
-                    tgBot.editMessageText(`❌ *Pairing Error:* ${err.message || "Failed to generate pairing code."}`, {
+                    tgBot.editMessageText("*_PAIRING ERROR_*", {
                         chat_id: tgChatId,
                         message_id: tgMsgId,
                         parse_mode: "Markdown"
@@ -1970,13 +2010,8 @@ async function createSubBotTelegram(botId, targetNum, tgChatId, tgMsgId) {
             };
             console.log(`\n🟢 TELEGRAM PAIRED SUB-BOT ${botId} (${targetNum}) CONNECTED!\n`);
 
-            if (!botSettings.adminNumber && subSock.user?.id) {
-                botSettings.adminNumber = cleanPhoneNumber(subSock.user.id);
-                saveSettings();
-            }
-
             if (tgBot) {
-                tgBot.sendMessage(tgChatId, `✅ *Sub-Bot Connected Successfully!*\n🤖 *ID:* \`${botId}\`\n📱 *Number:* +${targetNum}`, { parse_mode: "Markdown" });
+                tgBot.sendMessage(tgChatId, "*_SUB-BOT CONNECTED_*", { parse_mode: "Markdown" });
             }
         }
 
@@ -2022,10 +2057,10 @@ async function reloadSavedSubBots() {
 
 async function main() {
     console.clear();
-    console.log("🚀 XNS BOT STARTING (TELEGRAM MANAGEMENT MODE)...\n");
+    console.log("🚀 XNS BOT STARTING...\n");
     loadSettings();
 
-    if (!fs.existsSync(AUTH_DIR)) fs.mkdirSync(AUTH_DIR, { recursive: true });
+    if (!fs.existsSync(AUTH_MAIN_DIR)) fs.mkdirSync(AUTH_MAIN_DIR, { recursive: true });
     if (!fs.existsSync(MULTI_AUTH_BASE)) fs.mkdirSync(MULTI_AUTH_BASE, { recursive: true });
 
     if (!botSettings.telegramToken || botSettings.telegramToken.trim() === "") {
@@ -2048,6 +2083,7 @@ async function main() {
     }
 
     setupTelegramBot();
+    await startMainBot();
     await reloadSavedSubBots();
 }
 
